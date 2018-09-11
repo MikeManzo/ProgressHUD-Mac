@@ -1,53 +1,31 @@
 
-import Cocoa
+import AppKit
 
 enum ProgressHUDMode {
     case indeterminate // Progress is shown using an YRKSpinningProgressIndicator. This is the default.
     case determinateCircular // Progress is shown using a round, pie-chart like, progress view.
-    case determinateHorizontalBar // Progress is shown using a horizontal progress bar.
     case determinateAnnular // Progress is shown using a ring-shaped progress view.
+    case determinateHorizontalBar // Progress is shown using a horizontal progress bar.
     case customView // Shows a custom view and the text labels.
     case text // Shows only the text labels labels.
 }
 
-enum ProgressHUDAnimation {
-    case fade
-    case zoomIn
-    case zoomOut
+enum ProgressHUDMaskType {
+    case none // default mask type, allow user interactions while HUD is displayed
+    case clear // don't allow user interactions with background objects
+    case black // don't allow user interactions with background objects and dim the UI in the back of the HUD (as seen in iOS 7 and above)
+    case gradient // don't allow user interactions with background objects and dim the UI with a a-la UIAlertView background gradient (as seen in iOS 6)
+    case custom // don't allow user interactions with background objects and dim the UI in the back of the HUD with a custom color (customMaskTypeColor)
 }
 
 typealias ProgressHUDCompletionBlock = () -> Void
 
-let LabelAlignmentCenter = NSTextAlignment.center
-
 @objc protocol ProgressHUDDelegate: NSObjectProtocol {
-    /// Called after the HUD was fully hidden from the screen.
-    func hudWasHidden(_ hud: ProgressHUD)
-    /// Called after the HUD delay timed out but before HUD was fully hidden from the screen.
-    func hudWasHidden(afterDelay hud: ProgressHUD)
-    /// Called after the HUD was Tapped with dismissible option enabled.
-    func hudWasTapped(_ hud: ProgressHUD)
+    func hudWasHidden(_ hud: ProgressHUD) // Called after the HUD was fully hidden from the screen.
+    func hudWasHidden(afterDelay hud: ProgressHUD) // Called after the HUD delay timed out but before HUD was fully hidden from the screen.
+    func hudWasTapped(_ hud: ProgressHUD) // Called after the HUD was Tapped with dismissible option enabled.
 }
 
-/**
- * Displays a simple HUD window containing a progress indicator and two optional labels for short messages.
- *
- * This is a simple drop-in class for displaying a progress HUD view similar to Apple's private UIProgressHUD class.
- * The ProgressHUD window spans over the entire space given to it by the initWithFrame constructor and catches all
- * user input on this region, thereby preventing the user operations on components below the view. The HUD itself is
- * drawn centered as a rounded semi-transparent view which resizes depending on the user specified content.
- *
- * This view supports four modes of operation (ProgressHUDMode):
- * - indeterminate - shows a UIActivityIndicatorView
- * - determinate - shows a custom round progress indicator
- * - annularDeterminate - shows a custom annular progress indicator
- * - customView - shows an arbitrary, user specified view (@see customView)
- *
- * All three modes can have optional labels assigned:
- * - If the labelText property is set and non-empty then a label containing the provided content is placed below the
- *   indicator view.
- * - If also the detailsLabelText property is set then another label is placed below the first label.
- */
 class ProgressHUD: NSView {
 
     // MARK: - Properties
@@ -63,9 +41,6 @@ class ProgressHUD: NSView {
             needsDisplay = true
         }
     }
-
-    /// The animation type that should be used when the HUD is shown and hidden.
-    var animationType: ProgressHUDAnimation = .fade
 
     /**
      * The UIView (e.g., a UIImageView) to be shown when the HUD is in ProgressHUDModeCustomView.
@@ -132,8 +107,11 @@ class ProgressHUD: NSView {
     /// The corner radius for th HUD
     var cornerRadius: CGFloat = 10.0
 
-    /// Cover the HUD background view with a radial gradient.
-    var dimBackground = false
+    /// The HUD's background view.
+    var maskType: ProgressHUDMaskType = .clear
+
+    /// This color will be used as the view background when maskType is set to .custom.
+    var customMaskTypeColor = NSColor.red.withAlphaComponent(0.6)
 
     /// Allow User to dismiss HUD manually by a tap event. This calls the optional hudWasTapped: delegate.
     var dismissible = true
@@ -172,7 +150,6 @@ class ProgressHUD: NSView {
      */
     var removeFromSuperViewOnHide = true
 
-    /// Font to be used for the main label.
     var labelFont: NSFont = .boldSystemFont(ofSize: 18) {
         didSet {
             label.font = labelFont
@@ -181,7 +158,6 @@ class ProgressHUD: NSView {
         }
     }
 
-    /// Color to be used for the main label.
     var labelColor: NSColor = .black {
         didSet {
             label.textColor = labelColor
@@ -190,7 +166,6 @@ class ProgressHUD: NSView {
         }
     }
 
-    /// Font to be used for the details label.
     var detailsLabelFont: NSFont = .systemFont(ofSize: 16) {
         didSet {
             detailsLabel.font = detailsLabelFont
@@ -199,7 +174,6 @@ class ProgressHUD: NSView {
         }
     }
 
-    /// Color to be used for the details label.
     var detailsLabelColor: NSColor = .black {
         didSet {
             detailsLabel.textColor = detailsLabelColor
@@ -208,7 +182,7 @@ class ProgressHUD: NSView {
         }
     }
 
-    /// The progress of the progress indicator, from 0.0 to 1.0.
+    /// The progress of the progress indicator, from 0.0 to 1.0
     var progress: Float = 0.0 {
         didSet {
             indicator?.setValue(progress, forKeyPath: "progress")
@@ -217,7 +191,7 @@ class ProgressHUD: NSView {
         }
     }
 
-    /// The minimum size of the HUD bezel. Defaults to CGSizeZero (no minimum size).
+    /// The minimum size of the HUD.
     var minSize: CGSize = .zero
 
     /// Force the HUD dimensions to be equal if possible.
@@ -231,11 +205,8 @@ class ProgressHUD: NSView {
     private var showStarted: Date?
     private var size: CGSize = .zero
     private var useAnimation = false
-    private var methodForExecution: Selector?
-    private var targetForExecution: AnyObject?
-    private var objectForExecution: AnyObject?
-    private var label = NSText(frame: .zero)
-    private var detailsLabel = NSText(frame: .zero)
+    private let label = NSText(frame: .zero)
+    private let detailsLabel = NSText(frame: .zero)
     private var isFinished = false
     private var rotationTransform: CGAffineTransform = .identity
 
@@ -271,7 +242,7 @@ class ProgressHUD: NSView {
      * @see animationType
      */
     class func hide(for view: NSView, animated: Bool) -> Bool {
-        if let hud = hud(for: view) {
+        if let hud = hud(in: view) {
             hud.removeFromSuperViewOnHide = true
             hud.hide(animated)
             return true
@@ -290,8 +261,8 @@ class ProgressHUD: NSView {
      * @see hideHUDForView:animated:
      * @see animationType
      */
-    class func hideAllHUDs(for view: NSView, animated: Bool) -> Int {
-        let huds = ProgressHUD.allHUDs(for: view)
+    class func hideAllHUDs(in view: NSView, animated: Bool) -> Int {
+        let huds = ProgressHUD.allHUDs(in: view)
         for hud in huds {
             hud.removeFromSuperViewOnHide = true
             hud.hide(animated)
@@ -305,7 +276,7 @@ class ProgressHUD: NSView {
      * @param view The view that is going to be searched.
      * @return A reference to the last HUD subview discovered.
      */
-    class func hud(for view: NSView) -> ProgressHUD? {
+    class func hud(in view: NSView) -> ProgressHUD? {
         for subview in view.subviews where subview is ProgressHUD {
             return subview as? ProgressHUD
         }
@@ -318,7 +289,7 @@ class ProgressHUD: NSView {
      * @param view The view that is going to be searched.
      * @return All found HUD views (array of ProgressHUD objects).
      */
-    class func allHUDs(for view: NSView) -> [ProgressHUD] {
+    class func allHUDs(in view: NSView) -> [ProgressHUD] {
         var huds = [ProgressHUD]()
         for subView in view.subviews where subView is ProgressHUD {
             huds.append(subView as! ProgressHUD)
@@ -337,7 +308,7 @@ class ProgressHUD: NSView {
      */
     class func topHud(in window: NSWindow) -> ProgressHUD? {
         guard let view = window.contentView else { return nil }
-        return hud(for: view)
+        return hud(in: view)
     }
 
     /**
@@ -354,22 +325,24 @@ class ProgressHUD: NSView {
         self.init(frame: bounds)
     }
 
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        autoresizingMask = [.maxXMargin, .minXMargin, .maxYMargin, .minYMargin]
+        layer?.isOpaque = false
+        layer?.backgroundColor = NSColor.clear.cgColor
+        alphaValue = 0.0
+        setupLabels()
+        updateIndicators()
+    }
+
+    required init?(coder decoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     // MARK: - Show & Hide
 
-    /**
-     * Display the HUD. You need to make sure that the main thread completes its run loop soon after this method call so
-     * the user interface can be updated. Call this method when your task is already set-up to be executed in a new thread
-     * (e.g., when using something like NSOperation or calling an asynchronous call like NSURLRequest).
-     *
-     * @param animated If set to YES the HUD will appear using the current animationType. If set to NO the HUD will not use
-     * animations while appearing.
-     *
-     * @see animationType
-     */
+    /// Display the HUD. You need to make sure that the main thread completes its run loop soon after this method call so the user interface can be updated.
+    /// Call this method when your task is already set-up to be executed in a new thread (e.g., when using something like NSOperation or calling an asynchronous call like NSURLRequest).
     func show(_ animated: Bool) {
         updateIndicators()
         // allow self.spinsize to be effective
@@ -383,15 +356,7 @@ class ProgressHUD: NSView {
         }
     }
 
-    /**
-     * Hide the HUD. This still calls the hudWasHidden: delegate. This is the counterpart of the show: method. Use it to
-     * hide the HUD when your task completes.
-     *
-     * @param animated If set to YES the HUD will disappear using the current animationType. If set to NO the HUD will not use
-     * animations while disappearing.
-     *
-     * @see animationType
-     */
+    /// Hide the HUD. This still calls the hudWasHidden: delegate. This is the counterpart of the show: method. Use it to hide the HUD when your task completes.
     func hide(_ animated: Bool) {
         useAnimation = animated
         NSObject.cancelPreviousPerformRequests(withTarget: self)
@@ -411,69 +376,26 @@ class ProgressHUD: NSView {
         hide(usingAnimation: useAnimation)
     }
 
-    /**
-     * Hide the HUD after a delay. This still calls the hudWasHidden: delegate. This is the counterpart of the show: method. Use it to
-     * hide the HUD when your task completes.
-     *
-     * @param animated If set to YES the HUD will disappear using the current animationType. If set to NO the HUD will not use
-     * animations while disappearing.
-     * @param delay Delay in seconds until the HUD is hidden.
-     *
-     * @see animationType
-     */
+    // Hide the HUD after a delay. This still calls the hudWasHidden: delegate. This is the counterpart of the show: method. Use it to  hide the HUD when your task completes.
     func hide(_ animated: Bool, afterDelay delay: TimeInterval) {
         perform(#selector(hideDelayed(_:)), with: animated ? 1 : 0, afterDelay: delay)
     }
 
     // MARK: - Threading
 
-    /**
-     * Shows the HUD while a background task is executing in a new thread, then hides the HUD.
-     *
-     * This method also takes care of autorelease pools so your method does not have to be concerned with setting up a
-     * pool.
-     *
-     * @param method The method to be executed while the HUD is shown. This method will be executed in a new thread.
-     * @param target The object that the target method belongs to.
-     * @param object An optional object to be passed to the method.
-     * @param animated If set to YES the HUD will (dis)appear using the current animationType. If set to NO the HUD will not use
-     * animations while (dis)appearing.
-     */
-    func showWhileExecuting(_ method: Selector, onTarget target: AnyObject?, withObject object: AnyObject?, animated: Bool) {
-        methodForExecution = method
-        targetForExecution = target
-        objectForExecution = object
-        // Launch execution in new thread
-        taskInProgress = true
-        Thread.detachNewThreadSelector(#selector(launchExecution), toTarget: self, with: nil)
-        show(animated)
-    }
-
-    /**
-     * Shows the HUD while a block is executing on a background queue, then hides the HUD.
-     *
-     * @see showAnimated:whileExecutingBlock:onQueue:completionBlock:
-     */
+    /// Shows the HUD while a block is executing on a background queue, then hides the HUD.
     func show(animated: Bool, whileExecutingBlock block: @escaping () -> Void) {
         let queue = DispatchQueue.global(qos: .default)
         show(animated: animated, whileExecutingBlock: block, on: queue, completionBlock: nil)
     }
 
-    /**
-     * Shows the HUD while a block is executing on a background queue, then hides the HUD.
-     *
-     * @see showAnimated:whileExecutingBlock:onQueue:completionBlock:
-     */
+    /// Shows the HUD while a block is executing on a background queue, then hides the HUD and calls the completion block
     func show(animated: Bool, whileExecutingBlock block: @escaping () -> Void, completionBlock completion: @escaping () -> Void) {
         let queue = DispatchQueue.global(qos: .default)
         show(animated: animated, whileExecutingBlock: block, on: queue, completionBlock: completion)
     }
 
-    /**
-     * Shows the HUD while a block is executing on the specified dispatch queue, then hides the HUD.
-     *
-     * @see showAnimated:whileExecutingBlock:onQueue:completionBlock:
-     */
+    /// Shows the HUD while a block is executing on the specified dispatch queue, then hides the HUD.
     func show(animated: Bool, whileExecutingBlock block: @escaping () -> Void, on queue: DispatchQueue) {
         show(animated: animated, whileExecutingBlock: block, on: queue, completionBlock: nil)
     }
@@ -481,8 +403,7 @@ class ProgressHUD: NSView {
     /**
      * Shows the HUD while a block is executing on the specified dispatch queue, executes completion block on the main queue, and then hides the HUD.
      *
-     * @param animated If set to YES the HUD will (dis)appear using the current animationType. If set to NO the HUD will
-     * not use animations while (dis)appearing.
+     * @param animated If set to YES the HUD will (dis)appear using the current animationType. If set to NO the HUD will not use animations while (dis)appearing.
      * @param block The block to be executed while the HUD is shown.
      * @param queue The dispatch queue on which the block should be executed.
      * @param completion The block to be executed on completion.
@@ -502,31 +423,27 @@ class ProgressHUD: NSView {
     }
 
     private func setupLabels() {
-
         label.isEditable = false
-        label.alignment = LabelAlignmentCenter
+        label.isSelectable = false
+        label.alignment = .center
         label.layer?.isOpaque = false
         label.backgroundColor = .clear
         label.textColor = labelColor
         label.font = labelFont
-        if labelText != "" {
-            label.string = labelText
-            label.sizeToFit()
-        }
+        label.string = labelText
+        label.sizeToFit()
         addSubview(label)
 
-        detailsLabel = NSText(frame: .zero)
         detailsLabel.font = detailsLabelFont
         detailsLabel.isEditable = false
-        detailsLabel.alignment = LabelAlignmentCenter
+        detailsLabel.isSelectable = false
+        detailsLabel.alignment = .center
         detailsLabel.layer?.isOpaque = false
         detailsLabel.backgroundColor = .clear
         detailsLabel.textColor = detailsLabelColor
         detailsLabel.font = detailsLabelFont
-        if detailsLabelText != "" {
-            detailsLabel.string = detailsLabelText
-            detailsLabel.sizeToFit()
-        }
+        detailsLabel.string = detailsLabelText
+        detailsLabel.sizeToFit()
         addSubview(detailsLabel)
     }
 
@@ -540,11 +457,6 @@ class ProgressHUD: NSView {
                 self.done()
             }
             animator().alphaValue = 0
-            if animationType == .zoomIn {
-                animator().layer?.setAffineTransform(rotationTransform.concatenating(CGAffineTransform(scaleX: 1.5, y: 1.5)))
-            } else if animationType == .zoomOut {
-                animator().layer?.setAffineTransform(rotationTransform.concatenating(CGAffineTransform(scaleX: 0.5, y: 0.5)))
-            }
             NSAnimationContext.endGrouping()
         } else {
             alphaValue = 0.0
@@ -554,11 +466,6 @@ class ProgressHUD: NSView {
     }
 
     private func show(usingAnimation animated: Bool) {
-        if animated && animationType == .zoomIn {
-            layer?.setAffineTransform(rotationTransform.concatenating(CGAffineTransform(scaleX: 0.5, y: 0.5)))
-        } else if animated && animationType == .zoomOut {
-            layer?.setAffineTransform(rotationTransform.concatenating(CGAffineTransform(scaleX: 1.5, y: 1.5)))
-        }
         showStarted = Date()
         // Fade in
         isHidden = false
@@ -566,9 +473,6 @@ class ProgressHUD: NSView {
             NSAnimationContext.beginGrouping()
             NSAnimationContext.current.duration = 0.20
             animator().alphaValue = 1.0
-            if animationType == .zoomIn || animationType == .zoomOut {
-                animator().layer?.setAffineTransform(rotationTransform)
-            }
             NSAnimationContext.endGrouping()
         } else {
             alphaValue = 1.0
@@ -585,21 +489,19 @@ class ProgressHUD: NSView {
         }
         completionBlock?()
         completionBlock = nil
-        if delegate.self != nil {
-            if delegate?.responds(to: #selector(ProgressHUDDelegate.hudWasHidden(_:))) ?? false {
-                _ = delegate?.perform(#selector(ProgressHUDDelegate.hudWasHidden(_:)), with: self)
-            }
+        if delegate?.responds(to: #selector(ProgressHUDDelegate.hudWasHidden(_:))) ?? false {
+            _ = delegate?.perform(#selector(ProgressHUDDelegate.hudWasHidden(_:)), with: self)
         }
     }
 
     override func mouseDown(with theEvent: NSEvent) {
-        super.mouseDown(with: theEvent)
+        if maskType == .none {
+            super.mouseDown(with: theEvent)
+        }
         if dismissible {
             performSelector(onMainThread: #selector(cleanUp), with: nil, waitUntilDone: true)
-            if delegate != nil {
-                if delegate?.responds(to: #selector(ProgressHUDDelegate.hudWasTapped(_:))) ?? false {
-                    _ = delegate?.perform(#selector(ProgressHUDDelegate.hudWasTapped(_:)), with: self)
-                }
+            if delegate?.responds(to: #selector(ProgressHUDDelegate.hudWasTapped(_:))) ?? false {
+                _ = delegate?.perform(#selector(ProgressHUDDelegate.hudWasTapped(_:)), with: self)
             }
         }
     }
@@ -651,20 +553,7 @@ class ProgressHUD: NSView {
 
     @objc private func cleanUp() {
         taskInProgress = false
-        targetForExecution = nil
-        objectForExecution = nil
         hide(useAnimation)
-    }
-
-    @objc private func launchExecution() {
-        autoreleasepool {
-            // Start executing the requested task
-            if let anExecution = methodForExecution, let anExecution1 = objectForExecution {
-                _ = targetForExecution?.perform(anExecution, with: anExecution1)
-            }
-            // Task completed, update view in main thread (note: view operations should be done only in the main thread)
-            performSelector(onMainThread: #selector(cleanUp), with: nil, waitUntilDone: false)
-        }
     }
 
     @objc private func hideDelayed(_ animated: NSNumber?) {
@@ -675,18 +564,6 @@ class ProgressHUD: NSView {
             }
         }
         hide((animated != 0))
-    }
-
-    // MARK: - Lifecycle
-
-    override init(frame: NSRect) {
-        super.init(frame: frame)
-        autoresizingMask = [.maxXMargin, .minXMargin, .maxYMargin, .minYMargin]
-        layer?.isOpaque = false
-        layer?.backgroundColor = NSColor.clear.cgColor
-        alphaValue = 0.0
-        setupLabels()
-        updateIndicators()
     }
 
     // MARK: - Internal show & hide operations
@@ -789,13 +666,13 @@ class ProgressHUD: NSView {
         size = totalSize
     }
 
-    // MARK: - BG Drawing
+    // MARK: - Background Drawing
 
     override func draw(_ rect: NSRect) {
         layoutSubviews()
         NSGraphicsContext.saveGraphicsState()
         guard let context = NSGraphicsContext.current?.cgContext else { return }
-        if dimBackground {
+        if maskType == .gradient {
             // Gradient colours
             let gradLocationsNum: size_t = 2
             let gradLocations: [CGFloat] = [0.0, 1.0]
@@ -808,6 +685,12 @@ class ProgressHUD: NSView {
             let gradRadius = min(bounds.size.width, bounds.size.height)
             // Gradient draw
             context.drawRadialGradient(gradient, startCenter: gradCenter, startRadius: 0, endCenter: gradCenter, endRadius: gradRadius, options: CGGradientDrawingOptions.drawsAfterEndLocation)
+        } else if maskType == .black {
+            context.setFillColor(NSColor.black.withAlphaComponent(0.6).cgColor)
+            rect.fill()
+        } else if maskType == .custom {
+            context.setFillColor(customMaskTypeColor.cgColor)
+            rect.fill()
         }
 
         // Set background rect color
@@ -815,7 +698,7 @@ class ProgressHUD: NSView {
 
         // Center HUD
         let allRect = bounds
-        
+
         // Draw rounded HUD backgroud rect
         let boxRect = CGRect(x: round((allRect.size.width - size.width) / 2) + xOffset,
                              y: round((allRect.size.height - size.height) / 2) - yOffset,

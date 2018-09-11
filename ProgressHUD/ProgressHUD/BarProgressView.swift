@@ -1,13 +1,10 @@
 
 import AppKit
 
-// A flat bar progress view.
-
 class BarProgressView: NSView {
     
     @objc var progress: CGFloat = 0.0 { didSet { needsDisplay = true } }
     
-    /// Bar progress color.
     var progressColor: NSColor = .black { didSet { needsDisplay = true } }
     
     // MARK: - Lifecycle
