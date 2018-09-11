@@ -11,8 +11,6 @@
 		5655FEA22147172000B29365 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655FEA12147172000B29365 /* ViewController.swift */; };
 		5655FEA42147172100B29365 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5655FEA32147172100B29365 /* Assets.xcassets */; };
 		5655FEA72147172100B29365 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5655FEA52147172100B29365 /* Main.storyboard */; };
-		5655FEB32147175B00B29365 /* BarProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655FEAF2147175A00B29365 /* BarProgressView.swift */; };
-		5655FEB42147175B00B29365 /* RoundProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655FEB02147175B00B29365 /* RoundProgressView.swift */; };
 		5655FEB52147175B00B29365 /* YRKSpinningProgressIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655FEB12147175B00B29365 /* YRKSpinningProgressIndicator.swift */; };
 		5655FEB62147175B00B29365 /* ProgressHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655FEB22147175B00B29365 /* ProgressHUD.swift */; };
 /* End PBXBuildFile section */
@@ -25,8 +23,6 @@
 		5655FEA62147172100B29365 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		5655FEA82147172100B29365 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5655FEA92147172100B29365 /* ProgressHUD.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ProgressHUD.entitlements; sourceTree = "<group>"; };
-		5655FEAF2147175A00B29365 /* BarProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BarProgressView.swift; sourceTree = "<group>"; };
-		5655FEB02147175B00B29365 /* RoundProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RoundProgressView.swift; sourceTree = "<group>"; };
 		5655FEB12147175B00B29365 /* YRKSpinningProgressIndicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YRKSpinningProgressIndicator.swift; sourceTree = "<group>"; };
 		5655FEB22147175B00B29365 /* ProgressHUD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgressHUD.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -76,8 +72,6 @@
 			isa = PBXGroup;
 			children = (
 				5655FEB22147175B00B29365 /* ProgressHUD.swift */,
-				5655FEAF2147175A00B29365 /* BarProgressView.swift */,
-				5655FEB02147175B00B29365 /* RoundProgressView.swift */,
 				5655FEB12147175B00B29365 /* YRKSpinningProgressIndicator.swift */,
 			);
 			path = ProgressHUD;
@@ -157,8 +151,6 @@
 				5655FEA22147172000B29365 /* ViewController.swift in Sources */,
 				5655FEB62147175B00B29365 /* ProgressHUD.swift in Sources */,
 				5655FEA02147172000B29365 /* AppDelegate.swift in Sources */,
-				5655FEB32147175B00B29365 /* BarProgressView.swift in Sources */,
-				5655FEB42147175B00B29365 /* RoundProgressView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,7 +1,7 @@
 
 import AppKit
 
-enum ProgressHUDMode {
+enum ProgressHUDMode { /// ProgressHUD operation mod
     case indeterminate // Progress is shown using an YRKSpinningProgressIndicator. This is the default.
     case determinateCircular // Progress is shown using a round, pie-chart like, progress view.
     case determinateAnnular // Progress is shown using a ring-shaped progress view.
@@ -30,10 +30,9 @@ class ProgressHUD: NSView {
 
     // MARK: - Properties
 
-    /// A block that gets called after the HUD was completely hidden.
+    /// A block that gets called after the HUD is completely hidden.
     var completionBlock: ProgressHUDCompletionBlock?
 
-    /// ProgressHUD operation mode
     var mode: ProgressHUDMode = .indeterminate {
         didSet {
             updateIndicators()
@@ -42,10 +41,7 @@ class ProgressHUD: NSView {
         }
     }
 
-    /**
-     * The UIView (e.g., a UIImageView) to be shown when the HUD is in ProgressHUDModeCustomView.
-     * For best results use a 60 by 60 pixel view (so the bounds match the built in indicator bounds).
-     */
+    /// The view to be shown when the HUD is in ProgressHUDModeCustomView. For best results use a 60 by 60 pixel view (so the bounds match the built in indicator bounds)
     var customView: NSView? {
         didSet {
             updateIndicators()
@@ -56,11 +52,8 @@ class ProgressHUD: NSView {
 
     weak var delegate: ProgressHUDDelegate?
 
-    /**
-     * An optional short message to be displayed below the activity indicator. The HUD is automatically resized to fit
-     * the entire text. If the text is too long it will get clipped by displaying "..." at the end. If left unchanged or
-     * set to @"", then no message is displayed.
-     */
+    /// An optional short message to be displayed below the activity indicator. The HUD is automatically resized to fit the entire text.
+    /// If the text is too long it will get clipped by displaying "..." at the end. If left unchanged or set to @"", then no message is displayed.
     var labelText = "" {
         didSet {
             label.string = labelText
@@ -70,10 +63,8 @@ class ProgressHUD: NSView {
         }
     }
 
-    /**
-     * An optional details message displayed below the labelText message. This message is displayed only if the labelText
-     * property is also set and is different from an empty string (@""). The details text can span multiple lines.
-     */
+    /// An optional details message displayed below the labelText message. This message is displayed only if the labelText
+    /// property is also set and is different from an empty string (@""). The details text can span multiple lines.
     var detailsLabelText = "" {
         didSet {
             detailsLabel.string = detailsLabelText
@@ -87,7 +78,7 @@ class ProgressHUD: NSView {
     var opacity: CGFloat = 0.9
 
     /// The color of the HUD window.
-    var color: NSColor = .white { didSet { needsDisplay = true } }
+    var color = NSColor.white { didSet { needsDisplay = true } }
 
     /// The x-axis offset of the HUD relative to the centre of the superview.
     var xOffset: CGFloat = 0.0
@@ -108,7 +99,7 @@ class ProgressHUD: NSView {
     var cornerRadius: CGFloat = 10.0
 
     /// The HUD's background view.
-    var maskType: ProgressHUDMaskType = .clear
+    var maskType = ProgressHUDMaskType.clear
 
     /// This color will be used as the view background when maskType is set to .custom.
     var customMaskTypeColor = NSColor.red.withAlphaComponent(0.6)
@@ -117,21 +108,16 @@ class ProgressHUD: NSView {
     var dismissible = true
 
     /**
-     * Grace period is the time (in seconds) that the invoked method may be run without
-     * showing the HUD. If the task finishes before the grace time runs out, the HUD will
-     * not be shown at all.
-     * This may be used to prevent HUD display for very short tasks.
-     * Defaults to 0 (no grace time).
+     * Grace period is the time (in seconds) that the invoked method may be run without showing the HUD.
+     * If the task finishes before the grace time runs out, the HUD will not be shown at all.
+     * This may be used to prevent HUD display for very short tasks. Defaults to 0 (no grace time).
      * Grace time functionality is only supported when the task status is known!
      * @see taskInProgress
      */
     var graceTime: TimeInterval = 0.0
 
-    /**
-     * The minimum time (in seconds) that the HUD is shown.
-     * This avoids the problem of the HUD being shown and than instantly hidden.
-     * Defaults to 0 (no minimum show time).
-     */
+    /// The minimum time (in seconds) that the HUD is shown. This avoids the problem of the HUD being shown and then instantly hidden.
+    /// Defaults to 0 (no minimum show time).
     var minShowTime: TimeInterval = 0.0
 
     /**
@@ -144,13 +130,10 @@ class ProgressHUD: NSView {
      */
     var taskInProgress = false
 
-    /**
-     * Removes the HUD from its parent view when hidden.
-     * Defaults to true.
-     */
+    /// Removes the HUD from its parent view when hidden.
     var removeFromSuperViewOnHide = true
 
-    var labelFont: NSFont = .boldSystemFont(ofSize: 18) {
+    var labelFont = NSFont.boldSystemFont(ofSize: 18) {
         didSet {
             label.font = labelFont
             needsLayout = true
@@ -158,7 +141,7 @@ class ProgressHUD: NSView {
         }
     }
 
-    var labelColor: NSColor = .black {
+    var labelColor = NSColor.black {
         didSet {
             label.textColor = labelColor
             needsLayout = true
@@ -166,7 +149,7 @@ class ProgressHUD: NSView {
         }
     }
 
-    var detailsLabelFont: NSFont = .systemFont(ofSize: 16) {
+    var detailsLabelFont = NSFont.systemFont(ofSize: 16) {
         didSet {
             detailsLabel.font = detailsLabelFont
             needsLayout = true
@@ -174,7 +157,7 @@ class ProgressHUD: NSView {
         }
     }
 
-    var detailsLabelColor: NSColor = .black {
+    var detailsLabelColor = NSColor.black {
         didSet {
             detailsLabel.textColor = detailsLabelColor
             needsLayout = true
@@ -183,7 +166,7 @@ class ProgressHUD: NSView {
     }
 
     /// The progress of the progress indicator, from 0.0 to 1.0
-    var progress: Float = 0.0 {
+    var progress: Double = 0.0 {
         didSet {
             indicator?.setValue(progress, forKeyPath: "progress")
             needsLayout = true
@@ -192,7 +175,7 @@ class ProgressHUD: NSView {
     }
 
     /// The minimum size of the HUD.
-    var minSize: CGSize = .zero
+    var minSize = CGSize.zero
 
     /// Force the HUD dimensions to be equal if possible.
     var square = false
@@ -203,7 +186,7 @@ class ProgressHUD: NSView {
     private var graceTimer: Timer?
     private var minShowTimer: Timer?
     private var showStarted: Date?
-    private var size: CGSize = .zero
+    private var size = CGSize.zero
     private var useAnimation = false
     private let label = NSText(frame: .zero)
     private let detailsLabel = NSText(frame: .zero)
@@ -339,6 +322,31 @@ class ProgressHUD: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    private func setupLabels() {
+        label.isEditable = false
+        label.isSelectable = false
+        label.alignment = .center
+        label.layer?.isOpaque = false
+        label.backgroundColor = .clear
+        label.textColor = labelColor
+        label.font = labelFont
+        label.string = labelText
+        label.sizeToFit()
+        addSubview(label)
+
+        detailsLabel.font = detailsLabelFont
+        detailsLabel.isEditable = false
+        detailsLabel.isSelectable = false
+        detailsLabel.alignment = .center
+        detailsLabel.layer?.isOpaque = false
+        detailsLabel.backgroundColor = .clear
+        detailsLabel.textColor = detailsLabelColor
+        detailsLabel.font = detailsLabelFont
+        detailsLabel.string = detailsLabelText
+        detailsLabel.sizeToFit()
+        addSubview(detailsLabel)
+    }
+
     // MARK: - Show & Hide
 
     /// Display the HUD. You need to make sure that the main thread completes its run loop soon after this method call so the user interface can be updated.
@@ -360,8 +368,7 @@ class ProgressHUD: NSView {
     func hide(_ animated: Bool) {
         useAnimation = animated
         NSObject.cancelPreviousPerformRequests(withTarget: self)
-        // If the minShow time is set, calculate how long the hud was shown,
-        // and pospone the hiding operation if necessary
+        // If the minShow time is set, calculate how long the hud was shown, and pospone the hiding operation if necessary
         if minShowTime > 0.0 && showStarted != nil {
             var interv: TimeInterval = 0
             if let aStarted = showStarted {
@@ -420,31 +427,6 @@ class ProgressHUD: NSView {
             }
         }
         show(animated)
-    }
-
-    private func setupLabels() {
-        label.isEditable = false
-        label.isSelectable = false
-        label.alignment = .center
-        label.layer?.isOpaque = false
-        label.backgroundColor = .clear
-        label.textColor = labelColor
-        label.font = labelFont
-        label.string = labelText
-        label.sizeToFit()
-        addSubview(label)
-
-        detailsLabel.font = detailsLabelFont
-        detailsLabel.isEditable = false
-        detailsLabel.isSelectable = false
-        detailsLabel.alignment = .center
-        detailsLabel.layer?.isOpaque = false
-        detailsLabel.backgroundColor = .clear
-        detailsLabel.textColor = detailsLabelColor
-        detailsLabel.font = detailsLabelFont
-        detailsLabel.string = detailsLabelText
-        detailsLabel.sizeToFit()
-        addSubview(detailsLabel)
     }
 
     private func hide(usingAnimation animated: Bool) {
@@ -713,6 +695,169 @@ class ProgressHUD: NSView {
         context.closePath()
         context.fillPath()
         NSGraphicsContext.restoreGraphicsState()
+    }
+
+}
+
+class BarProgressView: NSView {
+
+    @objc var progress: CGFloat = 0.0 { didSet { needsDisplay = true } }
+    var progressColor: NSColor = .black { didSet { needsDisplay = true } }
+
+    convenience init() {
+        self.init(frame: CGRect(x: 0.0, y: 0.0, width: 140.0, height: 30.0))
+    }
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        layer?.backgroundColor = NSColor.clear.cgColor
+        layer?.isOpaque = false
+    }
+
+    required init?(coder decoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func draw(_ rect: NSRect) {
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+
+        // setup properties
+        context.setLineWidth(2)
+        context.setStrokeColor(progressColor.cgColor)
+        context.setFillColor(progressColor.cgColor)
+
+        // draw line border
+        var radius = (rect.size.height / 2) - 2
+        context.move(to: CGPoint(x: 2, y: rect.size.height / 2))
+        context.addArc(tangent1End: CGPoint(x: 2, y: 2), tangent2End: CGPoint(x: radius + 2, y: 2), radius: radius)
+        context.addLine(to: CGPoint(x: rect.size.width - radius - 2, y: 2))
+        context.addArc(tangent1End: CGPoint(x: rect.size.width - 2, y: 2), tangent2End: CGPoint(x: rect.size.width - 2, y: rect.size.height / 2), radius: radius)
+        context.addArc(tangent1End: CGPoint(x: rect.size.width - 2, y: rect.size.height - 2), tangent2End: CGPoint(x: rect.size.width - radius - 2, y: rect.size.height - 2), radius: radius)
+        context.addLine(to: CGPoint(x: radius + 2, y: rect.size.height - 2))
+        context.addArc(tangent1End: CGPoint(x: 2, y: rect.size.height - 2), tangent2End: CGPoint(x: 2, y: rect.size.height / 2), radius: radius)
+        context.strokePath()
+
+        // draw progress
+        radius -= 2
+        let amount = progress * rect.size.width
+        // if progress is in the middle area
+        if amount >= radius + 4 && amount <= (rect.size.width - radius - 4) {
+            // top
+            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
+            context.addArc(tangent1End: CGPoint(x: 4, y: 4), tangent2End: CGPoint(x: radius + 4, y: 4), radius: radius)
+            context.addLine(to: CGPoint(x: amount, y: 4))
+            context.addLine(to: CGPoint(x: amount, y: radius + 4))
+            // bottom
+            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
+            context.addArc(tangent1End: CGPoint(x: 4, y: rect.size.height - 4), tangent2End: CGPoint(x: radius + 4, y: rect.size.height - 4), radius: radius)
+            context.addLine(to: CGPoint(x: amount, y: rect.size.height - 4))
+            context.addLine(to: CGPoint(x: amount, y: radius + 4))
+            context.fillPath()
+        } else if amount > radius + 4 {
+            let x = amount - rect.size.width - radius - 4
+            // top
+            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
+            context.addArc(tangent1End: CGPoint(x: 4, y: 4), tangent2End: CGPoint(x: radius + 4, y: 4), radius: radius)
+            context.addLine(to: CGPoint(x: rect.size.width - radius - 4, y: 4))
+            var angle = -acos(x / radius)
+            if angle.isNaN {
+                angle = 0
+            }
+            context.addArc(center: CGPoint(x: rect.size.width - radius - 4, y: rect.size.height / 2), radius: radius, startAngle: .pi, endAngle: angle, clockwise: false)
+            context.addLine(to: CGPoint(x: amount, y: rect.size.height / 2))
+            // bottom
+            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
+            context.addArc(tangent1End: CGPoint(x: 4, y: rect.size.height - 4), tangent2End: CGPoint(x: radius + 4, y: rect.size.height - 4), radius: radius)
+            context.addLine(to: CGPoint(x: rect.size.width - radius - 4, y: rect.size.height - 4))
+            angle = acos(x / radius)
+            if angle.isNaN {
+                angle = 0
+            }
+            context.addArc(center: CGPoint(x: rect.size.width - radius - 4, y: rect.size.height / 2), radius: radius, startAngle: -.pi, endAngle: angle, clockwise: true)
+            context.addLine(to: CGPoint(x: amount, y: rect.size.height / 2))
+            context.fillPath()
+        } else if amount < radius + 4 && amount > 0 {
+            // top
+            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
+            context.addArc(tangent1End: CGPoint(x: 4, y: 4), tangent2End: CGPoint(x: radius + 4, y: 4), radius: radius)
+            context.addLine(to: CGPoint(x: radius + 4, y: rect.size.height / 2))
+            // bottom
+            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
+            context.addArc(tangent1End: CGPoint(x: 4, y: rect.size.height - 4), tangent2End: CGPoint(x: radius + 4, y: rect.size.height - 4), radius: radius)
+            context.addLine(to: CGPoint(x: radius + 4, y: rect.size.height / 2))
+            context.fillPath()
+        }
+    }
+
+}
+
+class RoundProgressView: NSView {
+
+    @objc var progress: CGFloat = 0.0 { didSet { needsDisplay = true } }
+    var progressTintColor = NSColor.black { didSet { needsDisplay = true } }
+    var annular = false { didSet { needsDisplay = true } } // Display mode - false = circular or true = annular.
+
+    convenience init() {
+        self.init(frame: CGRect(x: 0.0, y: 0.0, width: 37.0, height: 37.0))
+    }
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        layer?.backgroundColor = NSColor.clear.cgColor
+        layer?.isOpaque = false
+    }
+
+    required init?(coder decoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func draw(_ rect: NSRect) {
+
+        let allRect = bounds
+        let circleRect = allRect.insetBy(dx: 2.0, dy: 2.0)
+
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+
+        if annular {
+
+            let lineWidth: CGFloat = 5.0
+            let processBackgroundPath = NSBezierPath()
+            processBackgroundPath.lineWidth = lineWidth
+            processBackgroundPath.lineCapStyle = .round
+
+            // Draw progress
+            let center = CGPoint(x: bounds.size.width / 2, y: bounds.size.height / 2)
+            let radius = (bounds.size.width - lineWidth) / 2
+            let startAngle: CGFloat = 90
+            var endAngle = startAngle - 360 * progress
+            processBackgroundPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
+            progressTintColor.set()
+            processBackgroundPath.stroke()
+            let processPath = NSBezierPath()
+            processPath.lineCapStyle = .round
+            processPath.lineWidth = lineWidth
+            endAngle = startAngle - .pi * 2
+            processPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
+            progressTintColor.set()
+            processPath.stroke()
+
+        } else {
+
+            progressTintColor.setStroke()
+            context.setLineWidth(2.0)
+            context.strokeEllipse(in: circleRect)
+
+            // Draw progress
+            let center = CGPoint(x: allRect.size.width / 2, y: allRect.size.height / 2)
+            let radius = (allRect.size.width - 4) / 2
+            let startAngle: CGFloat = .pi / 2
+            let endAngle = startAngle - .pi * 2 * progress
+            context.setFillColor(progressTintColor.cgColor)
+            context.move(to: CGPoint(x: center.x, y: center.y))
+            context.addArc(center: CGPoint(x: center.x, y: center.y), radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
+            context.closePath()
+            context.fillPath()
+        }
     }
 
 }
