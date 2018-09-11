@@ -99,7 +99,7 @@ class ViewController: NSViewController {
         let hud = ProgressHUD.showAdded(to: view, animated: true)
         hud.mode = .text
         hud.labelText = "Message"
-        hud.detailsLabelText = "Showing text only"
+        hud.detailsLabelText = "Showing text only.\nOn multiple lines.\nSquashed much?"
         hud.hide(true, afterDelay: 2)
     }
 }

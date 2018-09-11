@@ -22,17 +22,9 @@ class YRKSpinningProgressIndicator: NSView {
         }
     }
     
-    var backgroundColor: NSColor? {
-        didSet {
-            needsDisplay = true
-        }
-    }
+    var backgroundColor: NSColor? { didSet { needsDisplay = true } }
     
-    var drawsBackground: Bool = false {
-        didSet {
-            needsDisplay = true
-        }
-    }
+    var drawsBackground: Bool = false { didSet { needsDisplay = true } }
     
     var displayedWhenStopped: Bool = true {
         didSet {
@@ -76,11 +68,7 @@ class YRKSpinningProgressIndicator: NSView {
         }
     }
     
-    var maxValue: Double = 100 {
-        didSet {
-            needsDisplay = true
-        }
-    }
+    var maxValue: Double = 100 { didSet { needsDisplay = true } }
     
     var position = 0
     var numFins = 12

@@ -8,40 +8,24 @@ class RoundProgressView: NSView {
     /**
      * Progress (0.0 to 1.0)
      */
-    @objc var progress: Float = 0.0 {
-        didSet {
-            needsDisplay = true
-        }
-    }
+    @objc var progress: Float = 0.0 { didSet { needsDisplay = true } }
     
     /**
      * Indicator progress color.
      * Defaults to black
      */
-    var progressTintColor = NSColor.black {
-        didSet {
-            needsDisplay = true
-        }
-    }
+    var progressTintColor = NSColor.black { didSet { needsDisplay = true } }
     
     /**
      * Indicator background (non-progress) color.
      * Defaults to black
      */
-    var backgroundTintColor = NSColor.clear {
-        didSet {
-            needsDisplay = true
-        }
-    }
+    var backgroundTintColor = NSColor.clear { didSet { needsDisplay = true } }
     
     /**
      * Display mode - NO = round or YES = annular. Defaults to round.
      */
-    var annular = false {
-        didSet {
-            needsDisplay = true
-        }
-    }
+    var annular = false { didSet { needsDisplay = true } }
     
     var cgColorFromNSColor: CGColor?
     required init?(coder aDecoder: NSCoder) {

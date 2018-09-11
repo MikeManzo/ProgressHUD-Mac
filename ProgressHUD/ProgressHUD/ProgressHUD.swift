@@ -112,11 +112,7 @@ class ProgressHUD: NSView {
     var opacity: CGFloat = 0.9
 
     /// The color of the HUD window.
-    var color: NSColor = .white {
-        didSet {
-            needsDisplay = true
-        }
-    }
+    var color: NSColor = .white { didSet { needsDisplay = true } }
 
     /// The x-axis offset of the HUD relative to the centre of the superview.
     var xOffset: CGFloat = 0.0
@@ -506,10 +502,8 @@ class ProgressHUD: NSView {
     }
 
     private func setupLabels() {
-        label = NSText(frame: .zero)
-        // label.adjustsFontSizeToFitWidth = NO;
+
         label.isEditable = false
-        // label.bezeled = NO;  // if NSTextView
         label.alignment = LabelAlignmentCenter
         label.layer?.isOpaque = false
         label.backgroundColor = .clear
@@ -523,14 +517,11 @@ class ProgressHUD: NSView {
 
         detailsLabel = NSText(frame: .zero)
         detailsLabel.font = detailsLabelFont
-        // detailsLabel.adjustsFontSizeToFitWidth = NO;
         detailsLabel.isEditable = false
-        // detailsLabel.bezeled = NO;  // if NSTextView
         detailsLabel.alignment = LabelAlignmentCenter
         detailsLabel.layer?.isOpaque = false
         detailsLabel.backgroundColor = .clear
         detailsLabel.textColor = detailsLabelColor
-        // detailsLabel.numberOfLines = 0;
         detailsLabel.font = detailsLabelFont
         if detailsLabelText != "" {
             detailsLabel.string = detailsLabelText
@@ -630,7 +621,7 @@ class ProgressHUD: NSView {
         } else if mode == .determinateCircular || mode == .determinateAnnular {
             if !isRoundIndicator {
                 indicator?.removeFromSuperview()
-                indicator = RoundProgressView(frame: CGRect(x: 0.0, y: 0.0, width: CGFloat(spinsize), height: CGFloat(spinsize)))
+                indicator = RoundProgressView(frame: CGRect(x: 0.0, y: 0.0, width: spinsize, height: spinsize))
                 addSubview(indicator!)
             }
             if mode == .determinateAnnular {
@@ -691,21 +682,12 @@ class ProgressHUD: NSView {
     override init(frame: NSRect) {
         super.init(frame: frame)
         autoresizingMask = [.maxXMargin, .minXMargin, .maxYMargin, .minYMargin]
-        // Transparent background
         layer?.isOpaque = false
         layer?.backgroundColor = NSColor.clear.cgColor
-        // Make it invisible for now
         alphaValue = 0.0
         setupLabels()
         updateIndicators()
-
     }
-
-    // MARK: - Show & hide
-
-    // MARK: - Timer callbacks
-
-    // MARK: - View Hierrarchy
 
     // MARK: - Internal show & hide operations
 
@@ -716,18 +698,20 @@ class ProgressHUD: NSView {
     // MARK: - Layout
 
     func layoutSubviews() {
-        // Entirely cover the parent view
-        let parent = superview
-        frame = parent?.bounds ?? .zero
 
-        let bounds = self.bounds
-        // Determine the total widt and height needed
-        let maxWidth = bounds.size.width - CGFloat(4 * margin)
+        // Entirely cover the parent view
+        frame = superview?.bounds ?? .zero
+
+        // Determine the total width and height needed
+        let maxWidth = bounds.size.width - margin * 4
         var totalSize = CGSize.zero
         var indicatorF = indicator?.bounds ?? .zero
         indicatorF.size.width = min(indicatorF.size.width, maxWidth)
         totalSize.width = max(totalSize.width, indicatorF.size.width)
         totalSize.height += indicatorF.size.height
+        if indicatorF.size.height > 0.0 {
+            totalSize.height += padding
+        }
 
         var labelSize: CGSize = label.string.count > 0 ? label.string.size(withAttributes: [NSAttributedString.Key.font: label.font!]) : CGSize.zero
         if labelSize.width > 0.0 {
@@ -736,7 +720,7 @@ class ProgressHUD: NSView {
         labelSize.width = min(labelSize.width, maxWidth)
         totalSize.width = max(totalSize.width, labelSize.width)
         totalSize.height += labelSize.height
-        if labelSize.height > 0.0 && (indicatorF.size.height) > 0.0 {
+        if labelSize.height > 0.0 && indicatorF.size.height > 0.0 {
             totalSize.height += padding
         }
         var detailsLabelSize: CGSize = detailsLabel.string.count > 0 ? detailsLabel.string.size(withAttributes: [NSAttributedString.Key.font: detailsLabel.font!]) : CGSize.zero
@@ -746,49 +730,53 @@ class ProgressHUD: NSView {
         detailsLabelSize.width = min(detailsLabelSize.width, maxWidth)
         totalSize.width = max(totalSize.width, detailsLabelSize.width)
         totalSize.height += detailsLabelSize.height
-        if detailsLabelSize.height > 0.0 && ((indicatorF.size.height) > 0.0 || labelSize.height > 0.0) {
+        if detailsLabelSize.height > 0.0 && (indicatorF.size.height > 0.0 || labelSize.height > 0.0) {
             totalSize.height += padding
         }
-        totalSize.width += CGFloat(2 * margin)
-        totalSize.height += CGFloat(2 * margin)
+        totalSize.width += margin * 2
+        totalSize.height += margin * 2
+
         // Position elements
-        // in OS X yAxis is inverted! So Top Down Must build from bottom up...
-        var yPos = CGFloat(round(Double(((bounds.size.height - totalSize.height) / 2))) + Double(margin) - Double(yOffset))
+        var yPos = round((bounds.size.height - totalSize.height) / 2) + margin - yOffset
         if labelSize.height > 0.0 && indicatorF.size.height > 0.0 {
             yPos += padding + labelSize.height
         }
-        if detailsLabelSize.height > 0.0 && ((indicatorF.size.height) > 0.0 || labelSize.height > 0.0) {
+        if detailsLabelSize.height > 0.0 && (indicatorF.size.height > 0.0 || labelSize.height > 0.0) {
             yPos += padding + detailsLabelSize.height
         }
-        let xPos = CGFloat(xOffset)
+        let xPos = xOffset
         indicatorF.origin.y = yPos
-        indicatorF.origin.x = CGFloat(round(Double((bounds.size.width - indicatorF.size.width) / 2)) + Double(xPos))
+        indicatorF.origin.x = round((bounds.size.width - indicatorF.size.width) / 2) + xPos
         indicator?.frame = indicatorF
-        // in OS X yAxis is inverted! So Top Down Must build from bottom up...
+
         if labelSize.height > 0.0 && indicatorF.size.height > 0.0 {
             yPos -= padding + labelSize.height
         }
+        if indicatorF.size.height > 0.0 {
+            yPos -= padding
+        }
         var labelF = CGRect.zero
         labelF.origin.y = yPos
-        labelF.origin.x = CGFloat(round(Double((bounds.size.width - labelSize.width) / 2)) + Double(xPos))
+        labelF.origin.x = round((bounds.size.width - labelSize.width) / 2) + xPos
         labelF.size = labelSize
         label.frame = labelF
-        // in OS X yAxis is inverted! So Top Down Must build from bottom up...
+
         if detailsLabelSize.height > 0.0 && (indicatorF.size.height > 0.0 || labelSize.height > 0.0) {
             yPos -= padding + detailsLabelSize.height
         }
         var detailsLabelF = CGRect.zero
         detailsLabelF.origin.y = yPos
-        detailsLabelF.origin.x = CGFloat(round(Double((bounds.size.width - detailsLabelSize.width) / 2)) + Double(xPos))
+        detailsLabelF.origin.x = round((bounds.size.width - detailsLabelSize.width) / 2) + xPos
         detailsLabelF.size = detailsLabelSize
         detailsLabel.frame = detailsLabelF
-        // Enforce minsize and quare rules
+
+        // Enforce minsize and square rules
         if square {
             let maximum = max(totalSize.width, totalSize.height)
-            if maximum <= bounds.size.width - CGFloat(2 * margin) {
+            if maximum <= bounds.size.width - margin * 2 {
                 totalSize.width = maximum
             }
-            if maximum <= bounds.size.height - CGFloat(2 * margin) {
+            if maximum <= bounds.size.height - margin * 2 {
                 totalSize.height = maximum
             }
         }
@@ -826,16 +814,19 @@ class ProgressHUD: NSView {
         context.setFillColor(color.withAlphaComponent(opacity).cgColor)
 
         // Center HUD
-        let allRect: CGRect = bounds
+        let allRect = bounds
+        
         // Draw rounded HUD backgroud rect
-        let boxRect = CGRect(x: CGFloat(round(Double((allRect.size.width - size.width) / 2)) + Double(xOffset)), y: CGFloat(round(Double((allRect.size.height - size.height) / 2)) - Double(yOffset)), width: size.width, height: size.height)
-        let radius: CGFloat = cornerRadius
+        let boxRect = CGRect(x: round((allRect.size.width - size.width) / 2) + xOffset,
+                             y: round((allRect.size.height - size.height) / 2) - yOffset,
+                             width: size.width, height: size.height)
+        let radius = cornerRadius
         context.beginPath()
-        context.move(to: CGPoint(x: CGFloat(boxRect.minX + radius), y: boxRect.minY))
-        context.addArc(center: CGPoint(x: CGFloat(boxRect.maxX - radius), y: CGFloat(boxRect.minY + radius)), radius: CGFloat(radius), startAngle: CGFloat.pi * 3 / 2, endAngle: 0, clockwise: false)
-        context.addArc(center: CGPoint(x: CGFloat(boxRect.maxX - radius), y: CGFloat(boxRect.maxY - radius)), radius: CGFloat(radius), startAngle: 0, endAngle: CGFloat.pi / 2, clockwise: false)
-        context.addArc(center: CGPoint(x: CGFloat(boxRect.minX + radius), y: CGFloat(boxRect.maxY - radius)), radius: CGFloat(radius), startAngle: CGFloat.pi / 2, endAngle: CGFloat.pi, clockwise: false)
-        context.addArc(center: CGPoint(x: CGFloat(boxRect.minX + radius), y: CGFloat(boxRect.minY + radius)), radius: CGFloat(radius), startAngle: CGFloat.pi, endAngle: CGFloat.pi * 3 / 2, clockwise: false)
+        context.move(to: CGPoint(x: boxRect.minX + radius, y: boxRect.minY))
+        context.addArc(center: CGPoint(x: boxRect.maxX - radius, y: boxRect.minY + radius), radius: radius, startAngle: .pi * 3 / 2, endAngle: 0, clockwise: false)
+        context.addArc(center: CGPoint(x: boxRect.maxX - radius, y: boxRect.maxY - radius), radius: radius, startAngle: 0, endAngle: .pi / 2, clockwise: false)
+        context.addArc(center: CGPoint(x: boxRect.minX + radius, y: boxRect.maxY - radius), radius: radius, startAngle: .pi / 2, endAngle: .pi, clockwise: false)
+        context.addArc(center: CGPoint(x: boxRect.minX + radius, y: boxRect.minY + radius), radius: radius, startAngle: .pi, endAngle: .pi * 3 / 2, clockwise: false)
         context.closePath()
         context.fillPath()
         NSGraphicsContext.restoreGraphicsState()
