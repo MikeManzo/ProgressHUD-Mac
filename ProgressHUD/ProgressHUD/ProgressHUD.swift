@@ -2,44 +2,31 @@
 import Cocoa
 
 enum ProgressHUDMode {
-    /** Progress is shown using an UIActivityIndicatorView. This is the default. */
-    case indeterminate
-    /** Progress is shown using a round, pie-chart like, progress view. */
-    case determinateCircular
-    /** Progress is shown using a horizontal progress bar */
-    case determinateHorizontalBar
-    /** Progress is shown using a ring-shaped progress view. */
-    case determinateAnnular
-    /** Shows a custom view */
-    case customView
-    /** Shows only labels */
-    case text
+    case indeterminate // Progress is shown using an YRKSpinningProgressIndicator. This is the default.
+    case determinateCircular // Progress is shown using a round, pie-chart like, progress view.
+    case determinateHorizontalBar // Progress is shown using a horizontal progress bar.
+    case determinateAnnular // Progress is shown using a ring-shaped progress view.
+    case customView // Shows a custom view and the text labels.
+    case text // Shows only the text labels labels.
 }
 
 enum ProgressHUDAnimation {
-    /** Opacity animation */
     case fade
-    /** Opacity + scale animation */
-    case zoom
-    static let zoomOut: ProgressHUDAnimation = .zoom
     case zoomIn
+    case zoomOut
 }
 
 typealias ProgressHUDCompletionBlock = () -> Void
 
 let LabelAlignmentCenter = NSTextAlignment.center
 
-private let kPadding: CGFloat = 4.0
-private let kLabelFontSize: CGFloat = 18.0
-private let kDetailsLabelFontSize: CGFloat = 16.0
-
 @objc protocol ProgressHUDDelegate: NSObjectProtocol {
     /// Called after the HUD was fully hidden from the screen.
-    func hudWasHidden(_ hud: ProgressHUD?)
+    func hudWasHidden(_ hud: ProgressHUD)
     /// Called after the HUD delay timed out but before HUD was fully hidden from the screen.
-    func hudWasHidden(afterDelay hud: ProgressHUD?)
+    func hudWasHidden(afterDelay hud: ProgressHUD)
     /// Called after the HUD was Tapped with dismissible option enabled.
-    func hudWasTapped(_ hud: ProgressHUD?)
+    func hudWasTapped(_ hud: ProgressHUD)
 }
 
 /**
@@ -65,16 +52,10 @@ class ProgressHUD: NSView {
 
     // MARK: - Properties
 
-    /**
-     * A block that gets called after the HUD was completely hidden.
-     */
+    /// A block that gets called after the HUD was completely hidden.
     var completionBlock: ProgressHUDCompletionBlock?
 
-    /**
-     * ProgressHUD operation mode. The default is ProgressHUDModeIndeterminate.
-     *
-     * @see ProgressHUDMode
-     */
+    /// ProgressHUD operation mode
     var mode: ProgressHUDMode = .indeterminate {
         didSet {
             updateIndicators()
@@ -83,16 +64,12 @@ class ProgressHUD: NSView {
         }
     }
 
-    /**
-     * The animation type that should be used when the HUD is shown and hidden.
-     *
-     * @see ProgressHUDAnimation
-     */
+    /// The animation type that should be used when the HUD is shown and hidden.
     var animationType: ProgressHUDAnimation = .fade
 
     /**
      * The UIView (e.g., a UIImageView) to be shown when the HUD is in ProgressHUDModeCustomView.
-     * For best results use a 37 by 37 pixel view (so the bounds match the built in indicator bounds).
+     * For best results use a 60 by 60 pixel view (so the bounds match the built in indicator bounds).
      */
     var customView: NSView? {
         didSet {
@@ -102,11 +79,6 @@ class ProgressHUD: NSView {
         }
     }
 
-    /**
-     * The HUD delegate object.
-     *
-     * @see ProgressHUDDelegate
-     */
     weak var delegate: ProgressHUDDelegate?
 
     /**
@@ -116,8 +88,8 @@ class ProgressHUD: NSView {
      */
     var labelText = "" {
         didSet {
-            label?.string = labelText
-            label?.sizeToFit()
+            label.string = labelText
+            label.sizeToFit()
             needsLayout = true
             needsDisplay = true
         }
@@ -129,66 +101,45 @@ class ProgressHUD: NSView {
      */
     var detailsLabelText = "" {
         didSet {
-            detailsLabel?.string = detailsLabelText
-            detailsLabel?.sizeToFit()
+            detailsLabel.string = detailsLabelText
+            detailsLabel.sizeToFit()
             needsLayout = true
             needsDisplay = true
         }
     }
 
-    /**
-     * The opacity of the HUD window. Defaults to 0.8 (80% opacity).
-     */
-    var opacity: CGFloat = 0.8
+    /// The opacity of the HUD window.
+    var opacity: CGFloat = 0.9
 
-    /**
-     * The color of the HUD window. Defaults to black. If this property is set, color is set using
-     * this UIColor and the opacity property is not used.  using retain because performing copy on
-     * UIColor base colors (like [UIColor greenColor]) cause problems with the copyZone.
-     */
-    var color: NSColor = NSColor.init(white: 1.0, alpha: 0.9) {
+    /// The color of the HUD window.
+    var color: NSColor = .white {
         didSet {
             needsDisplay = true
         }
     }
 
-    /**
-     * The x-axis offset of the HUD relative to the centre of the superview.
-     */
+    /// The x-axis offset of the HUD relative to the centre of the superview.
     var xOffset: CGFloat = 0.0
 
-    /**
-     * The y-axis offset of the HUD relative to the centre of the superview.
-     */
+    /// The y-axis offset of the HUD relative to the centre of the superview.
     var yOffset: CGFloat = 0.0
 
-    /**
-     * The size both horizontally and vertically of the spinner
-     * Defaults to 37.0 on iOS and to 60.0 for Mac OS X
-     */
+    /// The size both horizontally and vertically of the spinner
     var spinsize: CGFloat = 60.0
 
-    /**
-     * The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views).
-     * Defaults to 20.0
-     */
+    /// The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views).
     var margin: CGFloat = 20.0
 
-    /**
-     * The corner radius for th HUD
-     * Defaults to 10.0
-     */
+    /// The amount of space between the HUD elements (labels, indicators or custom views).
+    var padding: CGFloat = 4.0
+
+    /// The corner radius for th HUD
     var cornerRadius: CGFloat = 10.0
 
-    /**
-     * Cover the HUD background view with a radial gradient.
-     */
+    /// Cover the HUD background view with a radial gradient.
     var dimBackground = false
 
-    /**
-     * Allow User to dismiss HUD manually by a tap event. This calls the optional hudWasTapped: delegate.
-     * Defaults to true.
-     */
+    /// Allow User to dismiss HUD manually by a tap event. This calls the optional hudWasTapped: delegate.
     var dismissible = true
 
     /**
@@ -225,53 +176,43 @@ class ProgressHUD: NSView {
      */
     var removeFromSuperViewOnHide = true
 
-    /**
-     * Font to be used for the main label. Set this property if the default is not adequate.
-     */
-    var labelFont: NSFont = .boldSystemFont(ofSize: kLabelFontSize) {
+    /// Font to be used for the main label.
+    var labelFont: NSFont = .boldSystemFont(ofSize: 18) {
         didSet {
-            label?.font = labelFont
+            label.font = labelFont
             needsLayout = true
             needsDisplay = true
         }
     }
 
-    /**
-     * Color to be used for the main label. Set this property if the default is not adequate.
-     */
+    /// Color to be used for the main label.
     var labelColor: NSColor = .black {
         didSet {
-            label?.textColor = labelColor
+            label.textColor = labelColor
             needsLayout = true
             needsDisplay = true
         }
     }
 
-    /**
-     * Font to be used for the details label. Set this property if the default is not adequate.
-     */
-    var detailsLabelFont: NSFont = .systemFont(ofSize: kDetailsLabelFontSize) {
+    /// Font to be used for the details label.
+    var detailsLabelFont: NSFont = .systemFont(ofSize: 16) {
         didSet {
-            detailsLabel?.font = detailsLabelFont
+            detailsLabel.font = detailsLabelFont
             needsLayout = true
             needsDisplay = true
         }
     }
 
-    /**
-     * Color to be used for the details label. Set this property if the default is not adequate.
-     */
+    /// Color to be used for the details label.
     var detailsLabelColor: NSColor = .black {
         didSet {
-            detailsLabel?.textColor = detailsLabelColor
+            detailsLabel.textColor = detailsLabelColor
             needsLayout = true
             needsDisplay = true
         }
     }
 
-    /**
-     * The progress of the progress indicator, from 0.0 to 1.0. Defaults to 0.0.
-     */
+    /// The progress of the progress indicator, from 0.0 to 1.0.
     var progress: Float = 0.0 {
         didSet {
             indicator?.setValue(progress, forKeyPath: "progress")
@@ -280,29 +221,25 @@ class ProgressHUD: NSView {
         }
     }
 
-    /**
-     * The minimum size of the HUD bezel. Defaults to CGSizeZero (no minimum size).
-     */
-    var minSize = CGSize.zero
+    /// The minimum size of the HUD bezel. Defaults to CGSizeZero (no minimum size).
+    var minSize: CGSize = .zero
 
-    /**
-     * Force the HUD dimensions to be equal if possible.
-     */
+    /// Force the HUD dimensions to be equal if possible.
     var square = false
 
     // MARK: - Private Properties
 
-    private var indicator: NSView? // YRKSpinningProgressIndicator
+    private var indicator: NSView? // YRKSpinningProgressIndicator or RoundProgressView or BarProgressView
     private var graceTimer: Timer?
     private var minShowTimer: Timer?
     private var showStarted: Date?
-    private var size = CGSize.zero
+    private var size: CGSize = .zero
     private var useAnimation = false
     private var methodForExecution: Selector?
     private var targetForExecution: AnyObject?
     private var objectForExecution: AnyObject?
-    private var label: NSText?
-    private var detailsLabel: NSText?
+    private var label = NSText(frame: .zero)
+    private var detailsLabel = NSText(frame: .zero)
     private var isFinished = false
     private var rotationTransform: CGAffineTransform = .identity
 
@@ -571,38 +508,35 @@ class ProgressHUD: NSView {
     private func setupLabels() {
         label = NSText(frame: .zero)
         // label.adjustsFontSizeToFitWidth = NO;
-        label?.isEditable = false
+        label.isEditable = false
         // label.bezeled = NO;  // if NSTextView
-        label?.alignment = LabelAlignmentCenter
-        label?.layer?.isOpaque = false
-        label?.backgroundColor = NSColor.clear
-        label?.textColor = labelColor
-        label?.font = labelFont
+        label.alignment = LabelAlignmentCenter
+        label.layer?.isOpaque = false
+        label.backgroundColor = .clear
+        label.textColor = labelColor
+        label.font = labelFont
         if labelText != "" {
-            label?.string = labelText
-            label?.sizeToFit()
+            label.string = labelText
+            label.sizeToFit()
         }
-        if let aLabel = label {
-            addSubview(aLabel)
-        }
+        addSubview(label)
+
         detailsLabel = NSText(frame: .zero)
-        detailsLabel?.font = detailsLabelFont
+        detailsLabel.font = detailsLabelFont
         // detailsLabel.adjustsFontSizeToFitWidth = NO;
-        detailsLabel?.isEditable = false
+        detailsLabel.isEditable = false
         // detailsLabel.bezeled = NO;  // if NSTextView
-        detailsLabel?.alignment = LabelAlignmentCenter
-        detailsLabel?.layer?.isOpaque = false
-        detailsLabel?.backgroundColor = NSColor.clear
-        detailsLabel?.textColor = detailsLabelColor
+        detailsLabel.alignment = LabelAlignmentCenter
+        detailsLabel.layer?.isOpaque = false
+        detailsLabel.backgroundColor = .clear
+        detailsLabel.textColor = detailsLabelColor
         // detailsLabel.numberOfLines = 0;
-        detailsLabel?.font = detailsLabelFont
+        detailsLabel.font = detailsLabelFont
         if detailsLabelText != "" {
-            detailsLabel?.string = detailsLabelText
-            detailsLabel?.sizeToFit()
+            detailsLabel.string = detailsLabelText
+            detailsLabel.sizeToFit()
         }
-        if let aLabel = detailsLabel {
-            addSubview(aLabel)
-        }
+        addSubview(detailsLabel)
     }
 
     private func hide(usingAnimation animated: Bool) {
@@ -614,7 +548,7 @@ class ProgressHUD: NSView {
             NSAnimationContext.current.completionHandler = {
                 self.done()
             }
-            animator().alphaValue = 0.2
+            animator().alphaValue = 0
             if animationType == .zoomIn {
                 animator().layer?.setAffineTransform(rotationTransform.concatenating(CGAffineTransform(scaleX: 1.5, y: 1.5)))
             } else if animationType == .zoomOut {
@@ -795,7 +729,7 @@ class ProgressHUD: NSView {
         totalSize.width = max(totalSize.width, indicatorF.size.width)
         totalSize.height += indicatorF.size.height
 
-        var labelSize: CGSize = label!.string.count > 0 ? label!.string.size(withAttributes: [NSAttributedString.Key.font: label!.font!]) : CGSize.zero
+        var labelSize: CGSize = label.string.count > 0 ? label.string.size(withAttributes: [NSAttributedString.Key.font: label.font!]) : CGSize.zero
         if labelSize.width > 0.0 {
             labelSize.width += 10.0
         }
@@ -803,9 +737,9 @@ class ProgressHUD: NSView {
         totalSize.width = max(totalSize.width, labelSize.width)
         totalSize.height += labelSize.height
         if labelSize.height > 0.0 && (indicatorF.size.height) > 0.0 {
-            totalSize.height += kPadding
+            totalSize.height += padding
         }
-        var detailsLabelSize: CGSize = detailsLabel!.string.count > 0 ? detailsLabel!.string.size(withAttributes: [NSAttributedString.Key.font: detailsLabel!.font!]) : CGSize.zero
+        var detailsLabelSize: CGSize = detailsLabel.string.count > 0 ? detailsLabel.string.size(withAttributes: [NSAttributedString.Key.font: detailsLabel.font!]) : CGSize.zero
         if detailsLabelSize.width > 0.0 {
             detailsLabelSize.width += 10.0
         }
@@ -813,7 +747,7 @@ class ProgressHUD: NSView {
         totalSize.width = max(totalSize.width, detailsLabelSize.width)
         totalSize.height += detailsLabelSize.height
         if detailsLabelSize.height > 0.0 && ((indicatorF.size.height) > 0.0 || labelSize.height > 0.0) {
-            totalSize.height += kPadding
+            totalSize.height += padding
         }
         totalSize.width += CGFloat(2 * margin)
         totalSize.height += CGFloat(2 * margin)
@@ -821,10 +755,10 @@ class ProgressHUD: NSView {
         // in OS X yAxis is inverted! So Top Down Must build from bottom up...
         var yPos = CGFloat(round(Double(((bounds.size.height - totalSize.height) / 2))) + Double(margin) - Double(yOffset))
         if labelSize.height > 0.0 && indicatorF.size.height > 0.0 {
-            yPos += kPadding + labelSize.height
+            yPos += padding + labelSize.height
         }
         if detailsLabelSize.height > 0.0 && ((indicatorF.size.height) > 0.0 || labelSize.height > 0.0) {
-            yPos += kPadding + detailsLabelSize.height
+            yPos += padding + detailsLabelSize.height
         }
         let xPos = CGFloat(xOffset)
         indicatorF.origin.y = yPos
@@ -832,22 +766,22 @@ class ProgressHUD: NSView {
         indicator?.frame = indicatorF
         // in OS X yAxis is inverted! So Top Down Must build from bottom up...
         if labelSize.height > 0.0 && indicatorF.size.height > 0.0 {
-            yPos -= kPadding + labelSize.height
+            yPos -= padding + labelSize.height
         }
         var labelF = CGRect.zero
         labelF.origin.y = yPos
         labelF.origin.x = CGFloat(round(Double((bounds.size.width - labelSize.width) / 2)) + Double(xPos))
         labelF.size = labelSize
-        label?.frame = labelF
+        label.frame = labelF
         // in OS X yAxis is inverted! So Top Down Must build from bottom up...
         if detailsLabelSize.height > 0.0 && (indicatorF.size.height > 0.0 || labelSize.height > 0.0) {
-            yPos -= kPadding + detailsLabelSize.height
+            yPos -= padding + detailsLabelSize.height
         }
         var detailsLabelF = CGRect.zero
         detailsLabelF.origin.y = yPos
         detailsLabelF.origin.x = CGFloat(round(Double((bounds.size.width - detailsLabelSize.width) / 2)) + Double(xPos))
         detailsLabelF.size = detailsLabelSize
-        detailsLabel?.frame = detailsLabelF
+        detailsLabel.frame = detailsLabelF
         // Enforce minsize and quare rules
         if square {
             let maximum = max(totalSize.width, totalSize.height)
@@ -887,8 +821,9 @@ class ProgressHUD: NSView {
             // Gradient draw
             context.drawRadialGradient(gradient, startCenter: gradCenter, startRadius: 0, endCenter: gradCenter, endRadius: gradRadius, options: CGGradientDrawingOptions.drawsAfterEndLocation)
         }
+
         // Set background rect color
-        context.setFillColor(color.cgColor)
+        context.setFillColor(color.withAlphaComponent(opacity).cgColor)
 
         // Center HUD
         let allRect: CGRect = bounds

@@ -8,6 +8,7 @@ import AppKit
 //
 //  Modified for ObjC-ARC compatibility by Wayne Fox 2014
 class YRKSpinningProgressIndicator: NSView {
+    
     var color: NSColor? {
         didSet {
             // generate all the fin colors, with the alpha components
