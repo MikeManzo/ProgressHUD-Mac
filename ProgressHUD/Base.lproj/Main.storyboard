@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14313.13.2" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="14313.18" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.13.2"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14313.18"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -710,10 +710,10 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <stackView distribution="fill" orientation="vertical" alignment="centerX" spacing="20" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VBx-Hj-dLB">
-                                <rect key="frame" x="126" y="22" width="229" height="226"/>
+                                <rect key="frame" x="146" y="64" width="190" height="144"/>
                                 <subviews>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="a3q-Ds-NQe">
-                                        <rect key="frame" x="34" y="198" width="161" height="32"/>
+                                        <rect key="frame" x="14" y="116" width="161" height="32"/>
                                         <buttonCell key="cell" type="push" title="Show Indeterminate" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="T7T-hF-7qm">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -723,7 +723,7 @@
                                         </connections>
                                     </button>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="SBN-78-35L">
-                                        <rect key="frame" x="14" y="157" width="202" height="32"/>
+                                        <rect key="frame" x="-6" y="75" width="202" height="32"/>
                                         <buttonCell key="cell" type="push" title="Show Determinate Circular" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="vwW-fL-nXE">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -732,28 +732,8 @@
                                             <action selector="showDeterminateCircular:" target="XfG-lQ-9wD" id="GGG-CG-PyF"/>
                                         </connections>
                                     </button>
-                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ogu-v1-pST">
-                                        <rect key="frame" x="14" y="116" width="202" height="32"/>
-                                        <buttonCell key="cell" type="push" title="Show Determinate Annular" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="A7N-HE-wO5">
-                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                            <font key="font" metaFont="system"/>
-                                        </buttonCell>
-                                        <connections>
-                                            <action selector="showDeterminalAnnular:" target="XfG-lQ-9wD" id="UVm-Bb-ufj"/>
-                                        </connections>
-                                    </button>
-                                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="IAk-Qh-ije">
-                                        <rect key="frame" x="-6" y="75" width="241" height="32"/>
-                                        <buttonCell key="cell" type="push" title="Show Determinate Horizontal Bar" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Amu-Fu-haV">
-                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                            <font key="font" metaFont="system"/>
-                                        </buttonCell>
-                                        <connections>
-                                            <action selector="showDeterminateHorizontalBar:" target="XfG-lQ-9wD" id="StG-H7-Sx3"/>
-                                        </connections>
-                                    </button>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="QqA-eq-SDs">
-                                        <rect key="frame" x="36" y="34" width="157" height="32"/>
+                                        <rect key="frame" x="16" y="34" width="157" height="32"/>
                                         <buttonCell key="cell" type="push" title="Show Custom View" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="jqT-UR-9WJ">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -763,7 +743,7 @@
                                         </connections>
                                     </button>
                                     <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="K1k-Hn-ShS" userLabel="Show Text Only">
-                                        <rect key="frame" x="48" y="-7" width="134" height="32"/>
+                                        <rect key="frame" x="28" y="-7" width="134" height="32"/>
                                         <buttonCell key="cell" type="push" title="Show Text Only" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="u0g-op-28y">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
@@ -778,12 +758,8 @@
                                     <integer value="1000"/>
                                     <integer value="1000"/>
                                     <integer value="1000"/>
-                                    <integer value="1000"/>
-                                    <integer value="1000"/>
                                 </visibilityPriorities>
                                 <customSpacing>
-                                    <real value="3.4028234663852886e+38"/>
-                                    <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>

@@ -13,7 +13,6 @@
 		5655FEA72147172100B29365 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5655FEA52147172100B29365 /* Main.storyboard */; };
 		5655FEB52147175B00B29365 /* YRKSpinningProgressIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655FEB12147175B00B29365 /* YRKSpinningProgressIndicator.swift */; };
 		5655FEB62147175B00B29365 /* ProgressHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5655FEB22147175B00B29365 /* ProgressHUD.swift */; };
-		5680F3B12148572A005A7089 /* YRKSpinningProgressIndicatorLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5680F3B02148572A005A7089 /* YRKSpinningProgressIndicatorLayer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,7 +25,6 @@
 		5655FEA92147172100B29365 /* ProgressHUD.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ProgressHUD.entitlements; sourceTree = "<group>"; };
 		5655FEB12147175B00B29365 /* YRKSpinningProgressIndicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YRKSpinningProgressIndicator.swift; sourceTree = "<group>"; };
 		5655FEB22147175B00B29365 /* ProgressHUD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProgressHUD.swift; sourceTree = "<group>"; };
-		5680F3B02148572A005A7089 /* YRKSpinningProgressIndicatorLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YRKSpinningProgressIndicatorLayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,7 +73,6 @@
 			children = (
 				5655FEB22147175B00B29365 /* ProgressHUD.swift */,
 				5655FEB12147175B00B29365 /* YRKSpinningProgressIndicator.swift */,
-				5680F3B02148572A005A7089 /* YRKSpinningProgressIndicatorLayer.swift */,
 			);
 			path = ProgressHUD;
 			sourceTree = "<group>";
@@ -152,7 +149,6 @@
 			files = (
 				5655FEB52147175B00B29365 /* YRKSpinningProgressIndicator.swift in Sources */,
 				5655FEA22147172000B29365 /* ViewController.swift in Sources */,
-				5680F3B12148572A005A7089 /* YRKSpinningProgressIndicatorLayer.swift in Sources */,
 				5655FEB62147175B00B29365 /* ProgressHUD.swift in Sources */,
 				5655FEA02147172000B29365 /* AppDelegate.swift in Sources */,
 			);

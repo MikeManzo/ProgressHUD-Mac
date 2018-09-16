@@ -3,9 +3,7 @@ import AppKit
 
 enum ProgressHUDMode { /// ProgressHUD operation mod
     case indeterminate // Progress is shown using an YRKSpinningProgressIndicator. This is the default.
-    case determinateCircular // Progress is shown using a round, pie-chart like, progress view.
-    case determinateAnnular // Progress is shown using a ring-shaped progress view.
-    case determinateHorizontalBar // Progress is shown using a horizontal progress bar.
+    case determinate // Progress is shown using a round, pie-chart like, progress view.
     case customView // Shows a custom view and the text labels.
     case text // Shows only the text labels labels.
 }
@@ -168,7 +166,6 @@ class ProgressHUD: NSView {
     /// The progress of the progress indicator, from 0.0 to 1.0
     var progress: Double = 0.0 {
         didSet {
-            indicator?.setValue(progress, forKeyPath: "progress")
             needsLayout = true
             needsDisplay = true
         }
@@ -182,7 +179,8 @@ class ProgressHUD: NSView {
 
     // MARK: - Private Properties
 
-    private var indicator: NSView? // YRKSpinningProgressIndicator or RoundProgressView or BarProgressView
+    private var indicator: NSView?
+    private var progressIndicator = ProgressIndicatorLayer(size: 60)
     private var graceTimer: Timer?
     private var minShowTimer: Timer?
     private var showStarted: Date?
@@ -489,35 +487,28 @@ class ProgressHUD: NSView {
     }
 
     private func updateIndicators() {
-        let isActivityIndicator = indicator is YRKSpinningProgressIndicator
-        let isRoundIndicator = indicator is RoundProgressView
+        let isActivityIndicator = indicator?.layer is ProgressIndicatorLayer
+
         if mode == .indeterminate && !isActivityIndicator {
             indicator?.removeFromSuperview()
-            indicator = YRKSpinningProgressIndicator(frame: NSRect(x: 20, y: 20, width: spinsize, height: spinsize))
-            (indicator as? YRKSpinningProgressIndicator)?.color = .white
-            (indicator as? YRKSpinningProgressIndicator)?.usesThreadedAnimation = false
-            (indicator as? YRKSpinningProgressIndicator)?.startAnimation(self)
+            let view = NSView(frame: NSRect(x: 0, y: 0, width: spinsize, height: spinsize))
+            view.wantsLayer = true
+            progressIndicator.startProgressAnimation()
+            view.layer?.addSublayer(progressIndicator)
+            indicator = view
             addSubview(indicator!)
-        } else if mode == .determinateHorizontalBar {
+
+        } else if mode == .determinate || mode == .text {
+
             indicator?.removeFromSuperview()
-            indicator = BarProgressView()
-            addSubview(indicator!)
-        } else if mode == .determinateCircular || mode == .determinateAnnular {
-            if !isRoundIndicator {
-                indicator?.removeFromSuperview()
-                indicator = RoundProgressView(frame: CGRect(x: 0.0, y: 0.0, width: spinsize, height: spinsize))
-                addSubview(indicator!)
-            }
-            if mode == .determinateAnnular {
-                (indicator as? RoundProgressView)?.annular = true
-            }
+            indicator = nil
+
         } else if mode == .customView && customView != indicator {
+
             indicator?.removeFromSuperview()
             indicator = customView
             addSubview(indicator!)
-        } else if mode == .text {
-            indicator?.removeFromSuperview()
-            indicator = nil
+
         }
     }
 
@@ -694,99 +685,32 @@ class ProgressHUD: NSView {
         context.addArc(center: CGPoint(x: boxRect.minX + radius, y: boxRect.minY + radius), radius: radius, startAngle: .pi, endAngle: .pi * 3 / 2, clockwise: false)
         context.closePath()
         context.fillPath()
-        NSGraphicsContext.restoreGraphicsState()
-    }
 
-}
+        if mode == .determinate {
+            // Draw progress
+            let lineWidth: CGFloat = 5.0
+            let processBackgroundPath = NSBezierPath()
+            processBackgroundPath.lineWidth = lineWidth
+            processBackgroundPath.lineCapStyle = .round
 
-class BarProgressView: NSView {
+            let frame = indicator?.frame ?? .zero
+            let center = CGPoint(x: frame.origin.x + frame.size.width / 2, y: frame.origin.y + frame.size.height / 2)
+            let radius = spinsize / 2
+            let startAngle: CGFloat = 90
+            var endAngle = startAngle - 360 * CGFloat(progress)
+            processBackgroundPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
+            context.setStrokeColor(NSColor.black.cgColor)
+            processBackgroundPath.stroke()
+            let processPath = NSBezierPath()
+            processPath.lineCapStyle = .round
+            processPath.lineWidth = lineWidth
+            endAngle = startAngle - .pi * 2
+            processPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
+            context.setFillColor(NSColor.black.cgColor)
+            processPath.stroke()
 
-    @objc var progress: CGFloat = 0.0 { didSet { needsDisplay = true } }
-    var progressColor: NSColor = .black { didSet { needsDisplay = true } }
-
-    convenience init() {
-        self.init(frame: CGRect(x: 0.0, y: 0.0, width: 140.0, height: 30.0))
-    }
-
-    override init(frame: NSRect) {
-        super.init(frame: frame)
-        layer?.backgroundColor = NSColor.clear.cgColor
-        layer?.isOpaque = false
-    }
-
-    required init?(coder decoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override func draw(_ rect: NSRect) {
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
-
-        // setup properties
-        context.setLineWidth(2)
-        context.setStrokeColor(progressColor.cgColor)
-        context.setFillColor(progressColor.cgColor)
-
-        // draw line border
-        var radius = (rect.size.height / 2) - 2
-        context.move(to: CGPoint(x: 2, y: rect.size.height / 2))
-        context.addArc(tangent1End: CGPoint(x: 2, y: 2), tangent2End: CGPoint(x: radius + 2, y: 2), radius: radius)
-        context.addLine(to: CGPoint(x: rect.size.width - radius - 2, y: 2))
-        context.addArc(tangent1End: CGPoint(x: rect.size.width - 2, y: 2), tangent2End: CGPoint(x: rect.size.width - 2, y: rect.size.height / 2), radius: radius)
-        context.addArc(tangent1End: CGPoint(x: rect.size.width - 2, y: rect.size.height - 2), tangent2End: CGPoint(x: rect.size.width - radius - 2, y: rect.size.height - 2), radius: radius)
-        context.addLine(to: CGPoint(x: radius + 2, y: rect.size.height - 2))
-        context.addArc(tangent1End: CGPoint(x: 2, y: rect.size.height - 2), tangent2End: CGPoint(x: 2, y: rect.size.height / 2), radius: radius)
-        context.strokePath()
-
-        // draw progress
-        radius -= 2
-        let amount = progress * rect.size.width
-        // if progress is in the middle area
-        if amount >= radius + 4 && amount <= (rect.size.width - radius - 4) {
-            // top
-            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
-            context.addArc(tangent1End: CGPoint(x: 4, y: 4), tangent2End: CGPoint(x: radius + 4, y: 4), radius: radius)
-            context.addLine(to: CGPoint(x: amount, y: 4))
-            context.addLine(to: CGPoint(x: amount, y: radius + 4))
-            // bottom
-            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
-            context.addArc(tangent1End: CGPoint(x: 4, y: rect.size.height - 4), tangent2End: CGPoint(x: radius + 4, y: rect.size.height - 4), radius: radius)
-            context.addLine(to: CGPoint(x: amount, y: rect.size.height - 4))
-            context.addLine(to: CGPoint(x: amount, y: radius + 4))
-            context.fillPath()
-        } else if amount > radius + 4 {
-            let x = amount - rect.size.width - radius - 4
-            // top
-            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
-            context.addArc(tangent1End: CGPoint(x: 4, y: 4), tangent2End: CGPoint(x: radius + 4, y: 4), radius: radius)
-            context.addLine(to: CGPoint(x: rect.size.width - radius - 4, y: 4))
-            var angle = -acos(x / radius)
-            if angle.isNaN {
-                angle = 0
-            }
-            context.addArc(center: CGPoint(x: rect.size.width - radius - 4, y: rect.size.height / 2), radius: radius, startAngle: .pi, endAngle: angle, clockwise: false)
-            context.addLine(to: CGPoint(x: amount, y: rect.size.height / 2))
-            // bottom
-            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
-            context.addArc(tangent1End: CGPoint(x: 4, y: rect.size.height - 4), tangent2End: CGPoint(x: radius + 4, y: rect.size.height - 4), radius: radius)
-            context.addLine(to: CGPoint(x: rect.size.width - radius - 4, y: rect.size.height - 4))
-            angle = acos(x / radius)
-            if angle.isNaN {
-                angle = 0
-            }
-            context.addArc(center: CGPoint(x: rect.size.width - radius - 4, y: rect.size.height / 2), radius: radius, startAngle: -.pi, endAngle: angle, clockwise: true)
-            context.addLine(to: CGPoint(x: amount, y: rect.size.height / 2))
-            context.fillPath()
-        } else if amount < radius + 4 && amount > 0 {
-            // top
-            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
-            context.addArc(tangent1End: CGPoint(x: 4, y: 4), tangent2End: CGPoint(x: radius + 4, y: 4), radius: radius)
-            context.addLine(to: CGPoint(x: radius + 4, y: rect.size.height / 2))
-            // bottom
-            context.move(to: CGPoint(x: 4, y: rect.size.height / 2))
-            context.addArc(tangent1End: CGPoint(x: 4, y: rect.size.height - 4), tangent2End: CGPoint(x: radius + 4, y: rect.size.height - 4), radius: radius)
-            context.addLine(to: CGPoint(x: radius + 4, y: rect.size.height / 2))
-            context.fillPath()
         }
+        NSGraphicsContext.restoreGraphicsState()
     }
 
 }
@@ -857,6 +781,205 @@ class RoundProgressView: NSView {
             context.addArc(center: CGPoint(x: center.x, y: center.y), radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
             context.closePath()
             context.fillPath()
+        }
+    }
+
+}
+
+class ProgressIndicatorLayer: CALayer {
+
+    private(set) var isRunning = false
+
+    var color: NSColor? {
+        get {
+            // Need to convert from CGColor to NSColor
+            if let aColor = foreColor {
+                return NSColor(cgColor: aColor)
+            }
+            return nil
+        }
+        set(newColor) {
+            // Need to convert from NSColor to CGColor
+            foreColor = newColor?.cgColor
+
+            // Update do all of the fins to this new color, at once, immediately
+            CATransaction.begin()
+            CATransaction.setValue(true, forKey: kCATransactionDisableActions)
+            for fin in finLayers {
+                fin.backgroundColor = newColor?.cgColor
+            }
+            CATransaction.commit()
+
+            setNeedsDisplay()
+        }
+    }
+
+    private var finBoundsForCurrentBounds: CGRect {
+        let size: CGSize = bounds.size
+        let minSide: CGFloat = size.width > size.height ? size.height : size.width
+        let width: CGFloat = minSide * 0.095
+        let height: CGFloat = minSide * 0.30
+        return CGRect(x: 0, y: 0, width: width, height: height)
+    }
+
+    private var finAnchorPointForCurrentBounds: CGPoint {
+        let size: CGSize = bounds.size
+        let minSide: CGFloat = size.width > size.height ? size.height : size.width
+        let height: CGFloat = minSide * 0.30
+        return CGPoint(x: 0.5, y: -0.9 * (minSide - height) / minSide)
+    }
+
+    var animationTimer: Timer?
+    var fposition: Int = 0
+    var foreColor: CGColor?
+    var fadeDownOpacity: CGFloat = 0.0
+    var numFins: Int = 0
+    var finLayers: [CALayer] = []
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+
+    func toggleProgressAnimation() {
+        if isRunning {
+            stopProgressAnimation()
+        } else {
+            startProgressAnimation()
+        }
+    }
+
+    func startProgressAnimation() {
+        isHidden = false
+        isRunning = true
+        fposition = numFins - 1
+        setNeedsDisplay()
+        setupAnimTimer()
+    }
+
+    func stopProgressAnimation() {
+        isRunning = false
+        disposeAnimTimer()
+        setNeedsDisplay()
+    }
+
+    // Animation
+    @objc private func advancePosition() {
+        fposition += 1
+        if fposition >= numFins {
+            fposition = 0
+        }
+        let fin = finLayers[fposition]
+        // Set the next fin to full opacity, but do it immediately, without any animation
+        CATransaction.begin()
+        CATransaction.setValue(true, forKey: kCATransactionDisableActions)
+        fin.opacity = 1.0
+        CATransaction.commit()
+        // Tell that fin to animate its opacity to transparent.
+        fin.opacity = Float(fadeDownOpacity)
+        setNeedsDisplay()
+    }
+
+    private func removeFinLayers() {
+        for finLayer in finLayers {
+            finLayer.removeFromSuperlayer()
+        }
+    }
+
+    private func createFinLayers() {
+        removeFinLayers()
+        // Create new fin layers
+        let finBounds: CGRect = finBoundsForCurrentBounds
+        let finAnchorPoint: CGPoint = finAnchorPointForCurrentBounds
+        let finPosition = CGPoint(x: bounds.size.width / 2, y: bounds.size.height / 2)
+        let finCornerRadius: CGFloat = finBounds.size.width / 2
+        for i in 0..<numFins {
+            let newFin = CALayer()
+            newFin.bounds = finBounds
+            newFin.anchorPoint = finAnchorPoint
+            newFin.position = finPosition
+            newFin.transform = CATransform3DMakeRotation(CGFloat(i) * (-6.282185 / CGFloat(numFins)), 0.0, 0.0, 1.0)
+            newFin.cornerRadius = finCornerRadius
+            newFin.backgroundColor = foreColor
+            // Set the fin's initial opacity
+            CATransaction.begin()
+            CATransaction.setValue(true, forKey: kCATransactionDisableActions)
+            newFin.opacity = Float(fadeDownOpacity)
+            CATransaction.commit()
+            // set the fin's fade-out time (for when it's animating)
+            let anim = CABasicAnimation()
+            anim.duration = 0.7
+            let actions = ["opacity": anim]
+            newFin.actions = actions
+            addSublayer(newFin)
+            finLayers.append(newFin)
+        }
+    }
+
+    private func setupAnimTimer() {
+        // Just to be safe kill any existing timer.
+        disposeAnimTimer()
+        // Why animate if not visible?  viewDidMoveToWindow will re-call this method when needed.
+        animationTimer = Timer(timeInterval: TimeInterval(0.05), target: self, selector: #selector(ProgressIndicatorLayer.advancePosition), userInfo: nil, repeats: true)
+        animationTimer?.fireDate = Date()
+        if let aTimer = animationTimer {
+            RunLoop.current.add(aTimer, forMode: .common)
+        }
+        if let aTimer = animationTimer {
+            RunLoop.current.add(aTimer, forMode: .default)
+        }
+        if let aTimer = animationTimer {
+            RunLoop.current.add(aTimer, forMode: .eventTracking)
+        }
+    }
+
+    private func disposeAnimTimer() {
+        animationTimer?.invalidate()
+        animationTimer = nil
+    }
+
+    init(size: CGFloat) {
+        super.init()
+
+        fposition = 0
+        numFins = 12
+        fadeDownOpacity = 0.0
+        isRunning = false
+        color = .black
+        bounds = CGRect(x: -(size / 2), y: -(size / 2), width: size, height: size)
+        createFinLayers()
+        if isRunning {
+            setupAnimTimer()
+        }
+    }
+
+    deinit {
+        color = nil
+        stopProgressAnimation()
+        removeFinLayers()
+    }
+
+    override var bounds: CGRect {
+        get {
+            return super.bounds
+        }
+        set(newBounds) {
+            super.bounds = newBounds
+
+            // Resize the fins
+            let finBounds: CGRect = finBoundsForCurrentBounds
+            let finAnchorPoint: CGPoint = finAnchorPointForCurrentBounds
+            let finPosition = CGPoint(x: bounds.size.width / 2, y: bounds.size.height / 2)
+            let finCornerRadius: CGFloat = finBounds.size.width / 2
+
+            // do the resizing all at once, immediately
+            CATransaction.begin()
+            CATransaction.setValue(true, forKey: kCATransactionDisableActions)
+            for fin in finLayers {
+                fin.bounds = finBounds
+                fin.anchorPoint = finAnchorPoint
+                fin.position = finPosition
+                fin.cornerRadius = finCornerRadius
+            }
+            CATransaction.commit()
         }
     }
 

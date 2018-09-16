@@ -33,43 +33,9 @@ class ViewController: NSViewController {
 
     @IBAction func showDeterminateCircular(_ sender: Any) {
         let hud = ProgressHUD.showAdded(to: view, animated: true)
-        hud.mode = .determinateCircular
+        hud.mode = .determinate
         hud.labelText = "Determinate Progress"
         hud.detailsLabelText = "Circular"
-        DispatchQueue.global(qos: .default).async {
-            for _ in 0..<100 {
-                usleep(10000)
-                DispatchQueue.main.async {
-                    hud.progress += 0.01
-                }
-            }
-        }
-        hud.hide(true, afterDelay: 2.0)
-
-    }
-
-    @IBAction func showDeterminalAnnular(_ sender: Any) {
-        let hud = ProgressHUD.showAdded(to: view, animated: true)
-        hud.mode = .determinateAnnular
-        hud.labelText = "Determinate Progress"
-        hud.detailsLabelText = "Annular"
-        DispatchQueue.global(qos: .default).async {
-            for _ in 0..<100 {
-                usleep(10000)
-                DispatchQueue.main.async {
-                    hud.progress += 0.01
-                }
-            }
-        }
-        hud.hide(true, afterDelay: 2.0)
-
-    }
-
-    @IBAction func showDeterminateHorizontalBar(_ sender: Any) {
-        let hud = ProgressHUD.showAdded(to: view, animated: true)
-        hud.mode = .determinateHorizontalBar
-        hud.labelText = "Determinate Progress"
-        hud.detailsLabelText = "Horizontal Bar"
         DispatchQueue.global(qos: .default).async {
             for _ in 0..<100 {
                 usleep(10000)

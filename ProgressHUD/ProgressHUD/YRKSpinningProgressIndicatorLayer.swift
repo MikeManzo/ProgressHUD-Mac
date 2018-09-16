@@ -2,7 +2,7 @@
 import Cocoa
 import QuartzCore
 
-class YRKSpinningProgressIndicatorLayer: CALayer {
+class SpinningProgressIndicatorLayer: CALayer {
     // Properties and Accessors
     private(set) var isRunning = false
     private var _isDeterminate = false
@@ -39,13 +39,13 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
         }
         set(newColor) {
             // Need to convert from NSColor to CGColor
-            foreColor = newColor!.cgColor
+            foreColor = newColor?.cgColor
             
             // Update do all of the fins to this new color, at once, immediately
             CATransaction.begin()
             CATransaction.setValue(true, forKey: kCATransactionDisableActions)
-            for fin: CALayer in finLayers as? [CALayer] ?? [] {
-                fin.backgroundColor = newColor!.cgColor
+            for fin in finLayers {
+                fin.backgroundColor = newColor?.cgColor
             }
             CATransaction.commit()
             
@@ -74,7 +74,7 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
     var foreColor: CGColor?
     var fadeDownOpacity: CGFloat = 0.0
     var numFins: Int = 0
-    var finLayers: [AnyHashable] = []
+    var finLayers: [CALayer] = []
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
@@ -107,14 +107,14 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
         if fposition >= numFins {
             fposition = 0
         }
-        let fin = finLayers[fposition] as? CALayer
+        let fin = finLayers[fposition]
         // Set the next fin to full opacity, but do it immediately, without any animation
         CATransaction.begin()
         CATransaction.setValue(true, forKey: kCATransactionDisableActions)
-        fin?.opacity = 1.0
+        fin.opacity = 1.0
         CATransaction.commit()
         // Tell that fin to animate its opacity to transparent.
-        fin?.opacity = Float(fadeDownOpacity)
+        fin.opacity = Float(fadeDownOpacity)
         setNeedsDisplay()
     }
     
@@ -143,7 +143,7 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
     }
     
     private func removeFinLayers() {
-        for finLayer: CALayer in finLayers as? [CALayer] ?? [] {
+        for finLayer in finLayers {
             finLayer.removeFromSuperlayer()
         }
     }
@@ -151,7 +151,6 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
     private func createFinLayers() {
         removeFinLayers()
         // Create new fin layers
-        finLayers = [AnyHashable](repeating: 0, count: numFins)
         let finBounds: CGRect = finBoundsForCurrentBounds
         let finAnchorPoint: CGPoint = finAnchorPointForCurrentBounds
         let finPosition = CGPoint(x: bounds.size.width / 2, y: bounds.size.height / 2)
@@ -183,7 +182,7 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
         // Just to be safe kill any existing timer.
         disposeAnimTimer()
         // Why animate if not visible?  viewDidMoveToWindow will re-call this method when needed.
-        animationTimer = Timer(timeInterval: TimeInterval(0.05), target: self, selector: #selector(YRKSpinningProgressIndicatorLayer.advancePosition), userInfo: nil, repeats: true)
+        animationTimer = Timer(timeInterval: TimeInterval(0.05), target: self, selector: #selector(SpinningProgressIndicatorLayer.advancePosition), userInfo: nil, repeats: true)
         animationTimer?.fireDate = Date()
         if let aTimer = animationTimer {
             RunLoop.current.add(aTimer, forMode: .common)
@@ -201,15 +200,15 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
         animationTimer = nil
     }
     
-    override init() {
+    init(size: CGFloat) {
         super.init()
         
         fposition = 0
         numFins = 12
         fadeDownOpacity = 0.0
         isRunning = false
-        color = NSColor.black
-        bounds = CGRect(x: 0.0, y: 0.0, width: 10.0, height: 10.0)
+        color = .black
+        bounds = CGRect(x: -(size / 2), y: -(size / 2), width: size, height: size)
         isDeterminate = false
         doubleValue = 0
         maxValue = 100
@@ -218,6 +217,7 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
     
     deinit {
         color = nil
+        stopProgressAnimation()
         removeFinLayers()
     }
     
@@ -237,7 +237,7 @@ class YRKSpinningProgressIndicatorLayer: CALayer {
             // do the resizing all at once, immediately
             CATransaction.begin()
             CATransaction.setValue(true, forKey: kCATransactionDisableActions)
-            for fin: CALayer in finLayers as? [CALayer] ?? [] {
+            for fin in finLayers {
                 fin.bounds = finBounds
                 fin.anchorPoint = finAnchorPoint
                 fin.position = finPosition
