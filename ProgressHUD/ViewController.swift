@@ -26,6 +26,7 @@ class ViewController: NSViewController {
         let hud = ProgressHUD.showAdded(to: view, animated: true)
         hud.mode = .indeterminate
         hud.labelText = "Doing Stuff"
+        hud.detailsLabelText = "Completing something…"
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2) {
             hud.hide(true)
         }

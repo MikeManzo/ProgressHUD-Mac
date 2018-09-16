@@ -556,6 +556,9 @@ class ProgressHUD: NSView {
         let maxWidth = bounds.size.width - margin * 4
         var totalSize = CGSize.zero
         var indicatorF = indicator?.bounds ?? .zero
+        if mode == .determinate {
+            indicatorF.size.height = spinsize
+        }
         indicatorF.size.width = min(indicatorF.size.width, maxWidth)
         totalSize.width = max(totalSize.width, indicatorF.size.width)
         totalSize.height += indicatorF.size.height
@@ -693,8 +696,7 @@ class ProgressHUD: NSView {
             processBackgroundPath.lineWidth = lineWidth
             processBackgroundPath.lineCapStyle = .round
 
-            let frame = indicator?.frame ?? .zero
-            let center = CGPoint(x: frame.origin.x + frame.size.width / 2, y: frame.origin.y + frame.size.height / 2)
+            let center = CGPoint(x: boxRect.origin.x + boxRect.size.width / 2, y: boxRect.origin.y + boxRect.size.height - spinsize * 0.9)
             let radius = spinsize / 2
             let startAngle: CGFloat = 90
             var endAngle = startAngle - 360 * CGFloat(progress)
@@ -790,23 +792,14 @@ class ProgressIndicatorLayer: CALayer {
 
     private(set) var isRunning = false
 
-    var color: NSColor? {
-        get {
-            // Need to convert from CGColor to NSColor
-            if let aColor = foreColor {
-                return NSColor(cgColor: aColor)
-            }
-            return nil
-        }
-        set(newColor) {
-            // Need to convert from NSColor to CGColor
-            foreColor = newColor?.cgColor
+    var color = NSColor.black {
+        didSet(newColor) {
 
             // Update do all of the fins to this new color, at once, immediately
             CATransaction.begin()
             CATransaction.setValue(true, forKey: kCATransactionDisableActions)
             for fin in finLayers {
-                fin.backgroundColor = newColor?.cgColor
+                fin.backgroundColor = newColor.cgColor
             }
             CATransaction.commit()
 
@@ -830,13 +823,27 @@ class ProgressIndicatorLayer: CALayer {
     }
 
     var animationTimer: Timer?
-    var fposition: Int = 0
-    var foreColor: CGColor?
+    var fposition = 0
     var fadeDownOpacity: CGFloat = 0.0
-    var numFins: Int = 0
-    var finLayers: [CALayer] = []
+    var numFins = 12
+    var finLayers = [CALayer]()
+    
+    init(size: CGFloat) {
+        super.init()
+        bounds = CGRect(x: -(size / 2), y: -(size / 2), width: size, height: size)
+        createFinLayers()
+        if isRunning {
+            setupAnimTimer()
+        }
+    }
+    
     required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        stopProgressAnimation()
+        removeFinLayers()
     }
 
     func toggleProgressAnimation() {
@@ -898,7 +905,7 @@ class ProgressIndicatorLayer: CALayer {
             newFin.position = finPosition
             newFin.transform = CATransform3DMakeRotation(CGFloat(i) * (-6.282185 / CGFloat(numFins)), 0.0, 0.0, 1.0)
             newFin.cornerRadius = finCornerRadius
-            newFin.backgroundColor = foreColor
+            newFin.backgroundColor = color.cgColor
             // Set the fin's initial opacity
             CATransaction.begin()
             CATransaction.setValue(true, forKey: kCATransactionDisableActions)
@@ -934,27 +941,6 @@ class ProgressIndicatorLayer: CALayer {
     private func disposeAnimTimer() {
         animationTimer?.invalidate()
         animationTimer = nil
-    }
-
-    init(size: CGFloat) {
-        super.init()
-
-        fposition = 0
-        numFins = 12
-        fadeDownOpacity = 0.0
-        isRunning = false
-        color = .black
-        bounds = CGRect(x: -(size / 2), y: -(size / 2), width: size, height: size)
-        createFinLayers()
-        if isRunning {
-            setupAnimTimer()
-        }
-    }
-
-    deinit {
-        color = nil
-        stopProgressAnimation()
-        removeFinLayers()
     }
 
     override var bounds: CGRect {
