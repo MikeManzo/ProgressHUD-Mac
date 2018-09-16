@@ -32,17 +32,20 @@ enum ProgressHUDPosition {
 extension NSView {
     func showProgressHUD(title: String,
                          message: String,
+                         style: ProgressHUDStyle = .light,
                          mode: ProgressHUDMode = .indeterminate,
                          mask: ProgressHUDMaskType = .none,
+                         position: ProgressHUDPosition = .bottom,
                          duration: TimeInterval = 0) {
         let hud = ProgressHUD.showAdded(to: self, animated: true)
-        hud.mode = mode
         hud.labelText = title
         hud.detailsLabelText = message
+        hud.style = style
+        hud.mode = mode
+        hud.maskType = mask
+        hud.position = position
         if duration > 0 {
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + duration) {
-                hud.hide(true)
-            }
+            hud.hide(true, afterDelay: duration)
         }
     }
 
@@ -72,23 +75,6 @@ class ProgressHUD: NSView {
     /// A block that gets called after the HUD is completely hidden.
     var completionBlock: ProgressHUDCompletionBlock?
 
-    var mode: ProgressHUDMode = .indeterminate {
-        didSet {
-            updateIndicators()
-            needsLayout = true
-            needsDisplay = true
-        }
-    }
-
-    /// The view to be shown when the HUD is in ProgressHUDModeCustomView. For best results use a 60 by 60 pixel view (so the bounds match the built in indicator bounds)
-    var customView: NSView? {
-        didSet {
-            updateIndicators()
-            needsLayout = true
-            needsDisplay = true
-        }
-    }
-
     /// An optional short message to be displayed below the activity indicator. The HUD is automatically resized to fit the entire text.
     /// If the text is too long it will get clipped by displaying "..." at the end. If left unchanged or set to @"", then no message is displayed.
     var labelText = "" {
@@ -106,6 +92,27 @@ class ProgressHUD: NSView {
         didSet {
             detailsLabel.string = detailsLabelText
             detailsLabel.sizeToFit()
+            needsLayout = true
+            needsDisplay = true
+        }
+    }
+
+    var mode: ProgressHUDMode = .indeterminate {
+        didSet {
+            updateIndicators()
+            needsLayout = true
+            needsDisplay = true
+        }
+    }
+    
+    var style: ProgressHUDStyle = .light
+    
+    var position: ProgressHUDPosition = .bottom
+    
+    /// The view to be shown when the HUD is in ProgressHUDModeCustomView. For best results use a 60 by 60 pixel view (so the bounds match the built in indicator bounds)
+    var customView: NSView? {
+        didSet {
+            updateIndicators()
             needsLayout = true
             needsDisplay = true
         }
@@ -143,29 +150,6 @@ class ProgressHUD: NSView {
 
     /// Allow User to dismiss HUD manually by a tap event. This calls the optional hudWasTapped: delegate.
     var dismissible = true
-
-    /**
-     * Grace period is the time (in seconds) that the invoked method may be run without showing the HUD.
-     * If the task finishes before the grace time runs out, the HUD will not be shown at all.
-     * This may be used to prevent HUD display for very short tasks. Defaults to 0 (no grace time).
-     * Grace time functionality is only supported when the task status is known!
-     * @see taskInProgress
-     */
-    var graceTime: TimeInterval = 0.0
-
-    /// The minimum time (in seconds) that the HUD is shown. This avoids the problem of the HUD being shown and then instantly hidden.
-    /// Defaults to 0 (no minimum show time).
-    var minShowTime: TimeInterval = 0.0
-
-    /**
-     * Indicates that the executed operation is in progress. Needed for correct graceTime operation.
-     * If you don't set a graceTime (different than 0.0) this does nothing.
-     * This property is automatically set when using showWhileExecuting:onTarget:withObject:animated:.
-     * When threading is done outside of the HUD (i.e., when the show: and hide: methods are used directly),
-     * you need to set this property when your task starts and completes in order to have normal graceTime
-     * functionality.
-     */
-    var taskInProgress = false
 
     /// Removes the HUD from its parent view when hidden.
     var removeFromSuperViewOnHide = true
@@ -217,9 +201,6 @@ class ProgressHUD: NSView {
 
     private var indicator: NSView?
     private var progressIndicator = ProgressIndicatorLayer(size: 60)
-    private var graceTimer: Timer?
-    private var minShowTimer: Timer?
-    private var showStarted: Date?
     private var size = CGSize.zero
     private var useAnimation = true
     private let label = NSText(frame: .zero)
@@ -323,30 +304,15 @@ class ProgressHUD: NSView {
         updateIndicators()
         // allow self.spinsize to be effective
         useAnimation = animated
-        // If the grace time is set postpone the HUD display
-        if graceTime > 0.0 {
-            graceTimer = Timer.scheduledTimer(timeInterval: graceTime, target: self, selector: #selector(handleGraceTimer(_:)), userInfo: nil, repeats: false)
-        } else {
-            needsDisplay = true
-            show(usingAnimation: useAnimation)
-        }
+
+        needsDisplay = true
+        show(usingAnimation: useAnimation)
     }
 
     /// Hide the HUD. This still calls the hudWasHidden: delegate. This is the counterpart of the show: method. Use it to hide the HUD when your task completes.
     func hide(_ animated: Bool) {
         useAnimation = animated
         NSObject.cancelPreviousPerformRequests(withTarget: self)
-        // If the minShow time is set, calculate how long the hud was shown, and pospone the hiding operation if necessary
-        if minShowTime > 0.0 && showStarted != nil {
-            var interv: TimeInterval = 0
-            if let aStarted = showStarted {
-                interv = Date().timeIntervalSince(aStarted)
-            }
-            if interv < minShowTime {
-                minShowTimer = Timer.scheduledTimer(timeInterval: minShowTime - interv, target: self, selector: #selector(handleMinShow(_:)), userInfo: nil, repeats: false)
-                return
-            }
-        }
         // ... otherwise hide the HUD immediately
         hide(usingAnimation: useAnimation)
     }
@@ -356,51 +322,10 @@ class ProgressHUD: NSView {
         perform(#selector(hideDelayed(_:)), with: animated ? 1 : 0, afterDelay: delay)
     }
 
-    // MARK: - Threading
-
-    /// Shows the HUD while a block is executing on a background queue, then hides the HUD.
-    func show(animated: Bool, whileExecutingBlock block: @escaping () -> Void) {
-        let queue = DispatchQueue.global(qos: .default)
-        show(animated: animated, whileExecutingBlock: block, on: queue, completionBlock: nil)
-    }
-
-    /// Shows the HUD while a block is executing on a background queue, then hides the HUD and calls the completion block
-    func show(animated: Bool, whileExecutingBlock block: @escaping () -> Void, completionBlock completion: @escaping () -> Void) {
-        let queue = DispatchQueue.global(qos: .default)
-        show(animated: animated, whileExecutingBlock: block, on: queue, completionBlock: completion)
-    }
-
-    /// Shows the HUD while a block is executing on the specified dispatch queue, then hides the HUD.
-    func show(animated: Bool, whileExecutingBlock block: @escaping () -> Void, on queue: DispatchQueue) {
-        show(animated: animated, whileExecutingBlock: block, on: queue, completionBlock: nil)
-    }
-
-    /**
-     * Shows the HUD while a block is executing on the specified dispatch queue, executes completion block on the main queue, and then hides the HUD.
-     *
-     * @param animated If set to YES the HUD will (dis)appear using the current animationType. If set to NO the HUD will not use animations while (dis)appearing.
-     * @param block The block to be executed while the HUD is shown.
-     * @param queue The dispatch queue on which the block should be executed.
-     * @param completion The block to be executed on completion.
-     *
-     * @see completionBlock
-     */
-    func show(animated: Bool, whileExecutingBlock block: @escaping () -> Void, on queue: DispatchQueue, completionBlock completion: ProgressHUDCompletionBlock?) {
-        taskInProgress = true
-        completionBlock = completion
-        queue.async {
-            block()
-            DispatchQueue.main.async {
-                self.cleanUp()
-            }
-        }
-        show(animated)
-    }
-
     private func hide(usingAnimation animated: Bool) {
         NSObject.cancelPreviousPerformRequests(withTarget: self)
         // Fade out
-        if animated && showStarted != nil {
+        if animated {
             NSAnimationContext.beginGrouping()
             NSAnimationContext.current.duration = 0.20
             NSAnimationContext.current.completionHandler = {
@@ -412,11 +337,10 @@ class ProgressHUD: NSView {
             alphaValue = 0.0
             done()
         }
-        showStarted = nil
     }
 
     private func show(usingAnimation animated: Bool) {
-        showStarted = Date()
+
         // Fade in
         isHidden = false
         if animated {
@@ -476,20 +400,7 @@ class ProgressHUD: NSView {
         }
     }
 
-    @objc private func handleGraceTimer(_ theTimer: Timer?) {
-        // Show the HUD only if the task is still running
-        if taskInProgress {
-            needsDisplay = true
-            show(usingAnimation: useAnimation)
-        }
-    }
-
-    @objc private func handleMinShow(_ theTimer: Timer?) {
-        hide(usingAnimation: useAnimation)
-    }
-
     @objc private func cleanUp() {
-        taskInProgress = false
         hide(useAnimation)
     }
 
