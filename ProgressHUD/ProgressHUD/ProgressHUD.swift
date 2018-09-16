@@ -16,6 +16,12 @@ enum ProgressHUDMaskType {
     case custom // don't allow user interactions with background objects and dim the UI in the back of the HUD with a custom color (customMaskTypeColor)
 }
 
+enum ProgressHUDPosition {
+    case center
+    case top
+    case bottom
+}
+
 typealias ProgressHUDCompletionBlock = () -> Void
 
 @objc protocol ProgressHUDDelegate: NSObjectProtocol {
