@@ -23,30 +23,21 @@ class ViewController: NSViewController {
     }
 
     @IBAction func showIndeterminate(_ sender: Any) {
-        let hud = ProgressHUD.showAdded(to: view, animated: true)
-        hud.mode = .indeterminate
-        hud.labelText = "Doing Stuff"
-        hud.detailsLabelText = "Completing something…"
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 2) {
-            hud.hide(true)
-        }
+        view.showProgressHUD(title: "Doing Stuff", message: "Completing something…", mode: .indeterminate, duration: 2)
     }
 
     @IBAction func showDeterminateCircular(_ sender: Any) {
-        let hud = ProgressHUD.showAdded(to: view, animated: true)
-        hud.mode = .determinate
-        hud.labelText = "Determinate Progress"
-        hud.detailsLabelText = "Circular"
+        view.showProgressHUD(title: "Determinate Progress", message: "Almost done…", mode: .determinate)
         DispatchQueue.global(qos: .default).async {
+            var progress = 0.0
             for _ in 0..<100 {
                 usleep(10000)
-                DispatchQueue.main.async {
-                    hud.progress += 0.01
-                }
+                progress += 0.01
+                self.view.setProgressHUDProgress(progress)
             }
-        }
-        hud.hide(true, afterDelay: 2.0)
+            self.view.hideProgressHUD()
 
+        }
     }
 
     @IBAction func showCustomView(_ sender: Any) {
@@ -63,10 +54,7 @@ class ViewController: NSViewController {
     }
 
     @IBAction func showTextOnly(_ sender: Any) {
-        let hud = ProgressHUD.showAdded(to: view, animated: true)
-        hud.mode = .text
-        hud.labelText = "Message"
-        hud.detailsLabelText = "Showing text only.\nOn multiple lines.\nSquashed much?"
-        hud.hide(true, afterDelay: 2)
+        view.showProgressHUD(title: "Message", message: "Showing text only.\nOn multiple lines.\nSquashed much?", mode: .text, duration: 2)
     }
+    
 }

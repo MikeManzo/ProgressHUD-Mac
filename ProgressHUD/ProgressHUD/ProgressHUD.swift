@@ -1,11 +1,18 @@
 
 import AppKit
 
-enum ProgressHUDMode { /// ProgressHUD operation mod
-    case indeterminate // Progress is shown using an YRKSpinningProgressIndicator. This is the default.
+enum ProgressHUDMode { /// ProgressHUD operation mode
+    case indeterminate // Progress is shown using an Spinning Progress Indicator. This is the default.
     case determinate // Progress is shown using a round, pie-chart like, progress view.
+    case error // Shows an error icon and the text labels.
+    case success // Shows a success icon and the text labels.
     case customView // Shows a custom view and the text labels.
     case text // Shows only the text labels labels.
+}
+
+enum ProgressHUDStyle {
+    case light
+    case dark
 }
 
 enum ProgressHUDMaskType {
@@ -22,13 +29,41 @@ enum ProgressHUDPosition {
     case bottom
 }
 
-typealias ProgressHUDCompletionBlock = () -> Void
+extension NSView {
+    func showProgressHUD(title: String,
+                         message: String,
+                         mode: ProgressHUDMode = .indeterminate,
+                         mask: ProgressHUDMaskType = .none,
+                         duration: TimeInterval = 0) {
+        let hud = ProgressHUD.showAdded(to: self, animated: true)
+        hud.mode = mode
+        hud.labelText = title
+        hud.detailsLabelText = message
+        if duration > 0 {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + duration) {
+                hud.hide(true)
+            }
+        }
+    }
 
-@objc protocol ProgressHUDDelegate: NSObjectProtocol {
-    func hudWasHidden(_ hud: ProgressHUD) // Called after the HUD was fully hidden from the screen.
-    func hudWasHidden(afterDelay hud: ProgressHUD) // Called after the HUD delay timed out but before HUD was fully hidden from the screen.
-    func hudWasTapped(_ hud: ProgressHUD) // Called after the HUD was Tapped with dismissible option enabled.
+    func setProgressHUDProgress(_ progress: Double) {
+        DispatchQueue.main.async {
+            if let hud = ProgressHUD.hud(in: self) {
+                hud.progress = progress
+            }
+        }
+    }
+
+    func hideProgressHUD(afterDelay delay: TimeInterval = 0) {
+        DispatchQueue.main.async {
+            if let hud = ProgressHUD.hud(in: self) {
+                hud.hide(true, afterDelay: delay)
+            }
+        }
+    }
 }
+
+typealias ProgressHUDCompletionBlock = () -> Void
 
 class ProgressHUD: NSView {
 
@@ -53,8 +88,6 @@ class ProgressHUD: NSView {
             needsDisplay = true
         }
     }
-
-    weak var delegate: ProgressHUDDelegate?
 
     /// An optional short message to be displayed below the activity indicator. The HUD is automatically resized to fit the entire text.
     /// If the text is too long it will get clipped by displaying "..." at the end. If left unchanged or set to @"", then no message is displayed.
@@ -188,7 +221,7 @@ class ProgressHUD: NSView {
     private var minShowTimer: Timer?
     private var showStarted: Date?
     private var size = CGSize.zero
-    private var useAnimation = false
+    private var useAnimation = true
     private let label = NSText(frame: .zero)
     private let detailsLabel = NSText(frame: .zero)
     private var isFinished = false
@@ -215,46 +248,6 @@ class ProgressHUD: NSView {
     }
 
     /**
-     * Finds the top-most HUD subview and hides it. The counterpart to this method is showHUDAddedTo:animated:.
-     *
-     * @param view The view that is going to be searched for a HUD subview.
-     * @param animated If set to YES the HUD will disappear using the current animationType. If set to NO the HUD will not use
-     * animations while disappearing.
-     * @return YES if a HUD was found and removed, NO otherwise.
-     *
-     * @see showHUDAddedTo:animated:
-     * @see animationType
-     */
-    class func hide(for view: NSView, animated: Bool) -> Bool {
-        if let hud = hud(in: view) {
-            hud.removeFromSuperViewOnHide = true
-            hud.hide(animated)
-            return true
-        }
-        return false
-    }
-
-    /**
-     * Finds all the HUD subviews and hides them.
-     *
-     * @param view The view that is going to be searched for HUD subviews.
-     * @param animated If set to YES the HUDs will disappear using the current animationType. If set to NO the HUDs will not use
-     * animations while disappearing.
-     * @return the number of HUDs found and removed.
-     *
-     * @see hideHUDForView:animated:
-     * @see animationType
-     */
-    class func hideAllHUDs(in view: NSView, animated: Bool) -> Int {
-        let huds = ProgressHUD.allHUDs(in: view)
-        for hud in huds {
-            hud.removeFromSuperViewOnHide = true
-            hud.hide(animated)
-        }
-        return huds.count
-    }
-
-    /**
      * Finds the top-most HUD subview and returns it.
      *
      * @param view The view that is going to be searched.
@@ -267,33 +260,7 @@ class ProgressHUD: NSView {
         return nil
     }
 
-    /**
-     * Finds all HUD subviews and returns them.
-     *
-     * @param view The view that is going to be searched.
-     * @return All found HUD views (array of ProgressHUD objects).
-     */
-    class func allHUDs(in view: NSView) -> [ProgressHUD] {
-        var huds = [ProgressHUD]()
-        for subView in view.subviews where subView is ProgressHUD {
-            huds.append(subView as! ProgressHUD)
-        }
-        return huds
-    }
-
     // MARK: - Lifecycle
-
-    /**
-     * A convenience constructor that initializes the HUD with the window's bounds. Calls the designated constructor with
-     * window.bounds as the parameter.
-     *
-     * @param window The window instance that will provide the bounds for the HUD. Should be the same instance as
-     * the HUD's superview (i.e., the window that the HUD will be added to).
-     */
-    class func topHud(in window: NSWindow) -> ProgressHUD? {
-        guard let view = window.contentView else { return nil }
-        return hud(in: view)
-    }
 
     /**
      * A convenience constructor that initializes the HUD with the view's bounds. Calls the designated constructor with
@@ -472,9 +439,6 @@ class ProgressHUD: NSView {
         }
         completionBlock?()
         completionBlock = nil
-        if delegate?.responds(to: #selector(ProgressHUDDelegate.hudWasHidden(_:))) ?? false {
-            _ = delegate?.perform(#selector(ProgressHUDDelegate.hudWasHidden(_:)), with: self)
-        }
     }
 
     override func mouseDown(with theEvent: NSEvent) {
@@ -483,9 +447,6 @@ class ProgressHUD: NSView {
         }
         if dismissible {
             performSelector(onMainThread: #selector(cleanUp), with: nil, waitUntilDone: true)
-            if delegate?.responds(to: #selector(ProgressHUDDelegate.hudWasTapped(_:))) ?? false {
-                _ = delegate?.perform(#selector(ProgressHUDDelegate.hudWasTapped(_:)), with: self)
-            }
         }
     }
 
@@ -534,11 +495,6 @@ class ProgressHUD: NSView {
 
     @objc private func hideDelayed(_ animated: NSNumber?) {
         NSObject.cancelPreviousPerformRequests(withTarget: self)
-        if delegate != nil {
-            if delegate?.responds(to: #selector(ProgressHUDDelegate.hudWasHidden(afterDelay:))) ?? false {
-                _ = delegate?.perform(#selector(ProgressHUDDelegate.hudWasHidden(afterDelay:)), with: self)
-            }
-        }
         hide((animated != 0))
     }
 
@@ -626,7 +582,7 @@ class ProgressHUD: NSView {
         detailsLabelF.size = detailsLabelSize
         detailsLabel.frame = detailsLabelF
 
-        // Enforce minsize and square rules
+        // Enforce square rules
         if square {
             let maximum = max(totalSize.width, totalSize.height)
             if maximum <= bounds.size.width - margin * 2 {
