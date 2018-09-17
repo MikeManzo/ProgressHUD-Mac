@@ -521,7 +521,7 @@ private class ProgressHUD: NSView {
 
 }
 
-class ProgressIndicatorLayer: CALayer {
+private class ProgressIndicatorLayer: CALayer {
 
     private(set) var isRunning = false
 
