@@ -4,6 +4,8 @@ A Progress HUD for Mac
 
 ### Displays a simple HUD window containing a progress indicator and two optional labels for short messages.
  
+ ![Screenshot](hud-indeterminate.gif)
+ 
 This is a simple drop-in class for displaying a progress HUD view similar to Apple's private UIProgressHUD class.
 The ProgressHUD window spans over the entire space given to it by the initWithFrame constructor and catches all
 user input on this region, thereby preventing the user operations on components below the view. The HUD itself is
