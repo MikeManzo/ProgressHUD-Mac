@@ -1,34 +1,80 @@
 # ProgressHUD
-
-`ProgressHUD` is a clean and easy-to-use HUD meant to display the progress of an ongoing task on macOS. 
-
-### Displays a simple HUD view containing a progress indicator and optional title and message
+> `ProgressHUD` is a clean and easy-to-use HUD meant to display the progress of an ongoing task on macOS. 
  
+ [![Swift Version][swift-image]][swift-url]
+ [![Build Status][travis-image]][travis-url]
+ [![License][license-image]][license-url]
+ [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+
+Displays a simple HUD containing an optional progress indicator or cusom view and optional title and message.
+The ProgressHUD spans over the entire view it is attached to.
+
  ![Indeterminate](hud-indeterminate.gif)
  
  ![Determinate](hud-determinate.gif)
 
-The ProgressHUD window spans over the entire space given to it by the initWithFrame constructor and catches all
-user input on this region, thereby preventing the user operations on components below the view. The HUD itself is
-drawn centered as a rounded semi-transparent view which resizes depending on the user specified content.
+## Features
 
-This view supports vaious modes of operation (ProgressHUDMode):
- - `indeterminate` shows a UIActivityIndicatorView
- - `determinate` shows a custom round progress indicator
- - `customView` shows an arbitrary, user specified view
- - `text` shows only the text labels
+- [x] Easy to use API as extension to NSView
+- [x] Sensible defaults for one line instantiation
+- [x] Highly customizable theme and settings
+- [x] Option to revent user operations on components below the view.
 
-The API hides the actual ProgressHUD behind a few NSView extensions methods:
+## Requirements
+
+- macOS 10.11+
+- Xcode 10
+
+## Installation
+
+#### CocoaPods
+- [ ] TODO
+
+#### Manually
+1. Download and drop  ```ProgressHUD.swift```  in your project.  
+2. Congratulations!  
+
+## Usage example
+
+One liner:
+```swift
+view.showProgressHUD(title: "Doing Stuff", message: "Completing something…", mode: .indeterminate, duration: 2)
 ```
-func showProgressHUD(title: String, 
-                     message: String, 
-                     mode: ProgressHUDMode, 
-                     settings: ProgressHUDSettings, 
-                     duration: TimeInterval)
-func setProgressHUDProgress(_ progress: Double)
-func hideProgressHUD(afterDelay delay: TimeInterval) 
+Customized:
+```swift
+var settings = ProgressHUDSettings()
+settings.mode = .indeterminate
+settings.maskType = .black
+settings.style = .light
+settings.position = .center
+let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+imageView.image = NSImage(named: "Pluto")
+settings.customView = imageView
+view.showProgressHUD(title: "Fact", message: "Pluto is not a planet", mode: .customView, settings: settings, duration: 4)
 ```
+Setting the duration to 0 shows the ProgressHUD indefinitely. To Hide it:
+```swift
+view.hideProgressHUD()
+```
+For determinate progress indication use the following after showing the ProgressHUD with duration 0:
+```swift
+view.setProgressHUDProgress(progress)
+```
+(can be called safely from a background thread.)
 
-## License
+## Todo's
 
-`ProgressHUD` is distributed under the terms and conditions of the [MIT license](https://github.com/massimobio/ProgressHUD/blob/master/LICENSE).
+- [ ] Add support for Cocoapods
+- [ ] Implement remening modes ```error``` and ```success```
+- [ ] Look into Mojave's dark mode
+- [ ] Add tests
+
+## Contribute
+
+We would love you for the contribution to **ProgressHUD**, check the ``LICENSE`` file for more info.
+
+## Meta
+
+Massimo Biolcati – [@MassimoBi0lcati](https://twitter.com/MassimoBi0lcati)  [@iRealProApp](https://twitter.com/iRealProApp) 
+
+`ProgressHUD` is distributed under the terms and conditions of the [MIT license](https://github.com/massimobio/ProgressHUD/blob/master/LICENSE.md).
