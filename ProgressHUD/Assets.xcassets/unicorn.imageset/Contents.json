@@ -2,20 +2,17 @@
   "images" : [
     {
       "idiom" : "mac",
-      "filename" : "error.png",
+      "filename" : "if_Unicorn_2913106.png",
       "scale" : "1x"
     },
     {
       "idiom" : "mac",
-      "filename" : "error@2x.png",
+      "filename" : "if_Unicorn_2913106-3.png",
       "scale" : "2x"
     }
   ],
   "info" : {
     "version" : 1,
     "author" : "xcode"
-  },
-  "properties" : {
-    "template-rendering-intent" : "template"
   }
 }
