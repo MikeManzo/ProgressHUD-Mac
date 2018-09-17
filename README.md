@@ -13,8 +13,6 @@ The ProgressHUD spans over the entire view it is attached to.
 
  ![Indeterminate](hud-indeterminate.gif)
  
- ![Determinate](hud-determinate.gif)
-
 ## Features
 
 - [x] Easy to use API as extension to NSView
