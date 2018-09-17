@@ -73,7 +73,7 @@ view.setProgressHUDProgress(progress)
 
 ## Contribute
 
-We would love you for the contribution to **ProgressHUD**, check the ``LICENSE`` file for more info.
+We would love you for any contribution to **ProgressHUD**, check the ``LICENSE`` file for more info.
 
 ## Meta
 
