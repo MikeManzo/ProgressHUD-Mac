@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  ProgressHUD
+//  ProgressHUD, https://github.com/massimobio/ProgressHUD
 //
 //  Created by Massimo Biolcati on 9/10/18.
 //  Copyright © 2018 Massimo. All rights reserved.
