@@ -1,0 +1,9 @@
+language: objective-c
+os: osx
+osx_image: xcode10
+script:
+  
+  - xcodebuild build -project ProgressHUD.xcodeproj -scheme ProgressHUD -destination "platform=OS X,arch=x86_64"
+
+notifications:
+  email: true
