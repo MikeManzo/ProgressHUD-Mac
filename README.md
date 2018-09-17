@@ -1,5 +1,5 @@
 # ProgressHUD
-> `ProgressHUD` is a clean and easy-to-use HUD meant to display the progress of an ongoing task on macOS. 
+`ProgressHUD` is a clean and easy-to-use HUD meant to display the progress of an ongoing task on macOS. 
  
 [![Build Status](https://travis-ci.com/massimobio/ProgressHUD.svg?token=2EEVFqEqxnnpFcQYpwaE&branch=master)](https://travis-ci.com/massimobio/ProgressHUD)
 [![macOS](https://img.shields.io/badge/platform-macOS-blue.svg)](https://www.apple.com/macos/mojave/)
