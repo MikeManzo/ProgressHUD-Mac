@@ -1,6 +1,6 @@
 # ProgressHUD
-A Progress HUD for Mac
 
+`ProgressHUD` is a clean and easy-to-use HUD meant to display the progress of an ongoing task on macOS. 
 
 ### Displays a simple HUD view containing a progress indicator and optional title and message
  
@@ -28,3 +28,7 @@ func showProgressHUD(title: String,
 func setProgressHUDProgress(_ progress: Double)
 func hideProgressHUD(afterDelay delay: TimeInterval) 
 ```
+
+## License
+
+`ProgressHUD` is distributed under the terms and conditions of the [MIT license](https://github.com/massimobio/ProgressHUD/blob/master/LICENSE).
