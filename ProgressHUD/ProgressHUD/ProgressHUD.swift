@@ -13,6 +13,7 @@ enum ProgressHUDMode { /// ProgressHUD operation mode
 enum ProgressHUDStyle {
     case light
     case dark
+    case custom
 }
 
 enum ProgressHUDMaskType {
@@ -24,8 +25,8 @@ enum ProgressHUDMaskType {
 }
 
 enum ProgressHUDPosition {
-    case center
     case top
+    case center
     case bottom
 }
 
@@ -38,8 +39,8 @@ extension NSView {
                          position: ProgressHUDPosition = .bottom,
                          duration: TimeInterval = 0) {
         let hud = ProgressHUD.showAdded(to: self, animated: true)
-        hud.labelText = title
-        hud.detailsLabelText = message
+        hud.title = title
+        hud.message = message
         hud.style = style
         hud.mode = mode
         hud.maskType = mask
@@ -77,10 +78,10 @@ class ProgressHUD: NSView {
 
     /// An optional short message to be displayed below the activity indicator. The HUD is automatically resized to fit the entire text.
     /// If the text is too long it will get clipped by displaying "..." at the end. If left unchanged or set to @"", then no message is displayed.
-    var labelText = "" {
+    var title = "" {
         didSet {
-            label.string = labelText
-            label.sizeToFit()
+            titleLabel.string = title
+            titleLabel.sizeToFit()
             needsLayout = true
             needsDisplay = true
         }
@@ -88,10 +89,10 @@ class ProgressHUD: NSView {
 
     /// An optional details message displayed below the labelText message. This message is displayed only if the labelText
     /// property is also set and is different from an empty string (@""). The details text can span multiple lines.
-    var detailsLabelText = "" {
+    var message = "" {
         didSet {
-            detailsLabel.string = detailsLabelText
-            detailsLabel.sizeToFit()
+            messageLabel.string = message
+            messageLabel.sizeToFit()
             needsLayout = true
             needsDisplay = true
         }
@@ -104,11 +105,39 @@ class ProgressHUD: NSView {
             needsDisplay = true
         }
     }
-    
-    var style: ProgressHUDStyle = .light
-    
-    var position: ProgressHUDPosition = .bottom
-    
+
+    var style: ProgressHUDStyle = .light {
+        didSet {
+            switch style {
+            case .light:
+                backgroundColor = .white
+                tintColor = .black
+                progressIndicator.color = tintColor
+            case .dark:
+                backgroundColor = .black
+                tintColor = .init(white: 0.95, alpha: 1)
+                progressIndicator.color = tintColor
+            default:
+                break
+            }
+            setupLabels()
+            needsLayout = true
+            needsDisplay = true
+        }
+    }
+
+    var position: ProgressHUDPosition = .bottom {
+        didSet {
+            switch position {
+            case .top: yOffset = -bounds.size.height / 5
+            case .center: yOffset = 0
+            case .bottom: yOffset = bounds.size.height / 5
+            }
+            needsLayout = true
+            needsDisplay = true
+        }
+    }
+
     /// The view to be shown when the HUD is in ProgressHUDModeCustomView. For best results use a 60 by 60 pixel view (so the bounds match the built in indicator bounds)
     var customView: NSView? {
         didSet {
@@ -122,7 +151,10 @@ class ProgressHUD: NSView {
     var opacity: CGFloat = 0.9
 
     /// The color of the HUD window.
-    var color = NSColor.white { didSet { needsDisplay = true } }
+    var backgroundColor: NSColor = .white { didSet { needsDisplay = true } }
+
+    /// The color of the text and details.
+    var tintColor: NSColor = .black { didSet { needsDisplay = true } }
 
     /// The x-axis offset of the HUD relative to the centre of the superview.
     var xOffset: CGFloat = 0.0
@@ -146,7 +178,7 @@ class ProgressHUD: NSView {
     var maskType = ProgressHUDMaskType.clear
 
     /// This color will be used as the view background when maskType is set to .custom.
-    var customMaskTypeColor = NSColor.red.withAlphaComponent(0.6)
+    var customMaskTypeColor = NSColor.black.withAlphaComponent(0.6)
 
     /// Allow User to dismiss HUD manually by a tap event. This calls the optional hudWasTapped: delegate.
     var dismissible = true
@@ -154,33 +186,33 @@ class ProgressHUD: NSView {
     /// Removes the HUD from its parent view when hidden.
     var removeFromSuperViewOnHide = true
 
-    var labelFont = NSFont.boldSystemFont(ofSize: 18) {
+    var titleFont = NSFont.boldSystemFont(ofSize: 18) {
         didSet {
-            label.font = labelFont
+            titleLabel.font = titleFont
             needsLayout = true
             needsDisplay = true
         }
     }
 
-    var labelColor = NSColor.black {
+    var titleColor = NSColor.black {
         didSet {
-            label.textColor = labelColor
+            titleLabel.textColor = titleColor
             needsLayout = true
             needsDisplay = true
         }
     }
 
-    var detailsLabelFont = NSFont.systemFont(ofSize: 16) {
+    var messageFont = NSFont.systemFont(ofSize: 16) {
         didSet {
-            detailsLabel.font = detailsLabelFont
+            messageLabel.font = messageFont
             needsLayout = true
             needsDisplay = true
         }
     }
 
-    var detailsLabelColor = NSColor.black {
+    var messageColor = NSColor.black {
         didSet {
-            detailsLabel.textColor = detailsLabelColor
+            messageLabel.textColor = messageColor
             needsLayout = true
             needsDisplay = true
         }
@@ -203,8 +235,8 @@ class ProgressHUD: NSView {
     private var progressIndicator = ProgressIndicatorLayer(size: 60)
     private var size = CGSize.zero
     private var useAnimation = true
-    private let label = NSText(frame: .zero)
-    private let detailsLabel = NSText(frame: .zero)
+    private let titleLabel = NSText(frame: .zero)
+    private let messageLabel = NSText(frame: .zero)
     private var isFinished = false
     private var rotationTransform: CGAffineTransform = .identity
 
@@ -272,28 +304,28 @@ class ProgressHUD: NSView {
     }
 
     private func setupLabels() {
-        label.isEditable = false
-        label.isSelectable = false
-        label.alignment = .center
-        label.layer?.isOpaque = false
-        label.backgroundColor = .clear
-        label.textColor = labelColor
-        label.font = labelFont
-        label.string = labelText
-        label.sizeToFit()
-        addSubview(label)
+        titleLabel.isEditable = false
+        titleLabel.isSelectable = false
+        titleLabel.alignment = .center
+        titleLabel.layer?.isOpaque = false
+        titleLabel.backgroundColor = .clear
+        titleLabel.textColor = tintColor
+        titleLabel.font = titleFont
+        titleLabel.string = title
+        titleLabel.sizeToFit()
+        addSubview(titleLabel)
 
-        detailsLabel.font = detailsLabelFont
-        detailsLabel.isEditable = false
-        detailsLabel.isSelectable = false
-        detailsLabel.alignment = .center
-        detailsLabel.layer?.isOpaque = false
-        detailsLabel.backgroundColor = .clear
-        detailsLabel.textColor = detailsLabelColor
-        detailsLabel.font = detailsLabelFont
-        detailsLabel.string = detailsLabelText
-        detailsLabel.sizeToFit()
-        addSubview(detailsLabel)
+        messageLabel.font = messageFont
+        messageLabel.isEditable = false
+        messageLabel.isSelectable = false
+        messageLabel.alignment = .center
+        messageLabel.layer?.isOpaque = false
+        messageLabel.backgroundColor = .clear
+        messageLabel.textColor = tintColor
+        messageLabel.font = messageFont
+        messageLabel.string = message
+        messageLabel.sizeToFit()
+        addSubview(messageLabel)
     }
 
     // MARK: - Show & Hide
@@ -436,7 +468,7 @@ class ProgressHUD: NSView {
             totalSize.height += padding
         }
 
-        var labelSize: CGSize = label.string.count > 0 ? label.string.size(withAttributes: [NSAttributedString.Key.font: label.font!]) : CGSize.zero
+        var labelSize: CGSize = titleLabel.string.count > 0 ? titleLabel.string.size(withAttributes: [NSAttributedString.Key.font: titleLabel.font!]) : CGSize.zero
         if labelSize.width > 0.0 {
             labelSize.width += 10.0
         }
@@ -446,7 +478,7 @@ class ProgressHUD: NSView {
         if labelSize.height > 0.0 && indicatorF.size.height > 0.0 {
             totalSize.height += padding
         }
-        var detailsLabelSize: CGSize = detailsLabel.string.count > 0 ? detailsLabel.string.size(withAttributes: [NSAttributedString.Key.font: detailsLabel.font!]) : CGSize.zero
+        var detailsLabelSize: CGSize = messageLabel.string.count > 0 ? messageLabel.string.size(withAttributes: [NSAttributedString.Key.font: messageLabel.font!]) : CGSize.zero
         if detailsLabelSize.width > 0.0 {
             detailsLabelSize.width += 10.0
         }
@@ -482,7 +514,7 @@ class ProgressHUD: NSView {
         labelF.origin.y = yPos
         labelF.origin.x = round((bounds.size.width - labelSize.width) / 2) + xPos
         labelF.size = labelSize
-        label.frame = labelF
+        titleLabel.frame = labelF
 
         if detailsLabelSize.height > 0.0 && (indicatorF.size.height > 0.0 || labelSize.height > 0.0) {
             yPos -= padding + detailsLabelSize.height
@@ -491,7 +523,7 @@ class ProgressHUD: NSView {
         detailsLabelF.origin.y = yPos
         detailsLabelF.origin.x = round((bounds.size.width - detailsLabelSize.width) / 2) + xPos
         detailsLabelF.size = detailsLabelSize
-        detailsLabel.frame = detailsLabelF
+        messageLabel.frame = detailsLabelF
 
         // Enforce square rules
         if square {
@@ -534,7 +566,7 @@ class ProgressHUD: NSView {
         }
 
         // Set background rect color
-        context.setFillColor(color.withAlphaComponent(opacity).cgColor)
+        context.setFillColor(backgroundColor.withAlphaComponent(opacity).cgColor)
 
         // Center HUD
         let allRect = bounds
@@ -565,17 +597,17 @@ class ProgressHUD: NSView {
             let startAngle: CGFloat = 90
             var endAngle = startAngle - 360 * CGFloat(progress)
             processBackgroundPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-            context.setStrokeColor(NSColor.black.cgColor)
+            context.setStrokeColor(tintColor.cgColor)
             processBackgroundPath.stroke()
             let processPath = NSBezierPath()
             processPath.lineCapStyle = .round
             processPath.lineWidth = lineWidth
             endAngle = startAngle - .pi * 2
             processPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-            context.setFillColor(NSColor.black.cgColor)
+            context.setFillColor(tintColor.cgColor)
             processPath.stroke()
-
         }
+
         NSGraphicsContext.restoreGraphicsState()
     }
 
@@ -586,16 +618,14 @@ class ProgressIndicatorLayer: CALayer {
     private(set) var isRunning = false
 
     var color = NSColor.black {
-        didSet(newColor) {
-
-            // Update do all of the fins to this new color, at once, immediately
+        didSet {
+            // Update do all of the fins to this new color
             CATransaction.begin()
             CATransaction.setValue(true, forKey: kCATransactionDisableActions)
             for fin in finLayers {
-                fin.backgroundColor = newColor.cgColor
+                fin.backgroundColor = color.cgColor
             }
             CATransaction.commit()
-
             setNeedsDisplay()
         }
     }
