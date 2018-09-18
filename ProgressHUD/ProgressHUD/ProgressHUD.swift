@@ -38,7 +38,6 @@ enum ProgressHUDPosition {
     case top
     case center
     case bottom
-    case custom
 }
 
 // Use this for detailed customization of the ProgressHUD
@@ -52,8 +51,6 @@ struct ProgressHUDSettings {
     var messageFont = NSFont.systemFont(ofSize: 16)
     var messageColor = NSColor.black
     var opacity: CGFloat = 0.9 // The opacity of the HUD window.
-    var xOffset: CGFloat = 0.0 // The x-axis offset of the HUD relative to the centre of the superview. (ProgressHUDPosition has to be custom)
-    var yOffset: CGFloat = 0.0 // The y-axis offset of the HUD relative to the centre of the superview. (ProgressHUDPosition has to be custom)
     var spinsize: CGFloat = 60.0 // The size both horizontally and vertically of the spinner
     var margin: CGFloat = 20.0 // The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views).
     var padding: CGFloat = 4.0 // The amount of space between the HUD elements (labels, indicators or custom views).
@@ -153,19 +150,12 @@ private class ProgressHUD: NSView {
     private let messageLabel = NSText(frame: .zero)
     private var isFinished = false
     private var rotationTransform: CGAffineTransform = .identity
-    private var xOffset: CGFloat {
-        switch settings.position {
-        case .top, .center, .bottom: return 0
-        case .custom: return settings.xOffset
-        }
-    }
 
     private var yOffset: CGFloat {
         switch settings.position {
         case .top: return -bounds.size.height / 5
         case .center: return 0
         case .bottom: return bounds.size.height / 5
-        case .custom: return settings.yOffset
         }
     }
 
@@ -411,7 +401,7 @@ private class ProgressHUD: NSView {
         if detailsLabelSize.height > 0.0 && (indicatorF.size.height > 0.0 || labelSize.height > 0.0) {
             yPos += settings.padding + detailsLabelSize.height
         }
-        let xPos = xOffset
+        let xPos: CGFloat = 0
         indicatorF.origin.y = yPos
         indicatorF.origin.x = round((bounds.size.width - indicatorF.size.width) / 2) + xPos
         indicator?.frame = indicatorF
@@ -474,7 +464,7 @@ private class ProgressHUD: NSView {
         let allRect = bounds
 
         // Draw rounded HUD backgroud rect
-        let boxRect = CGRect(x: round((allRect.size.width - size.width) / 2) + xOffset,
+        let boxRect = CGRect(x: round((allRect.size.width - size.width) / 2),
                              y: round((allRect.size.height - size.height) / 2) - yOffset,
                              width: size.width, height: size.height)
         let radius = settings.cornerRadius
