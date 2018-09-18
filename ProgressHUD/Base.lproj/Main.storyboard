@@ -94,7 +94,8 @@
                                                 <action selector="saveDocument:" target="Ady-hI-5gd" id="teZ-XB-qJY"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Save As…" keyEquivalent="S" id="Bw7-FT-i3A">
+                                        <menuItem title="Save As…" keyEquivalent="s" id="Bw7-FT-i3A">
+                                            <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
                                             <connections>
                                                 <action selector="saveDocumentAs:" target="Ady-hI-5gd" id="mDf-zr-I0C"/>
                                             </connections>
@@ -640,8 +641,8 @@
                                                 <action selector="performMiniaturize:" target="Ady-hI-5gd" id="VwT-WD-YPe"/>
                                             </connections>
                                         </menuItem>
-                                        <menuItem title="Zoom" id="R4o-n2-Eq4">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        <menuItem title="Zoom" keyEquivalent="m" id="R4o-n2-Eq4">
+                                            <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
                                             <connections>
                                                 <action selector="performZoom:" target="Ady-hI-5gd" id="DIl-cC-cCs"/>
                                             </connections>
@@ -787,7 +788,7 @@
                                         </customSpacing>
                                     </stackView>
                                     <stackView distribution="fill" orientation="horizontal" alignment="centerY" spacing="10" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5Dd-Yt-Mgq">
-                                        <rect key="frame" x="125" y="41" width="298" height="21"/>
+                                        <rect key="frame" x="164" y="41" width="220" height="21"/>
                                         <subviews>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="b6E-Hs-4VI">
                                                 <rect key="frame" x="-2" y="2" width="40" height="17"/>
@@ -798,14 +799,13 @@
                                                 </textFieldCell>
                                             </textField>
                                             <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="f0a-Dq-pxu">
-                                                <rect key="frame" x="44" y="-2" width="256" height="24"/>
+                                                <rect key="frame" x="44" y="-2" width="178" height="24"/>
                                                 <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="4i6-NC-rgF">
                                                     <font key="font" metaFont="system"/>
                                                     <segments>
                                                         <segment label="None" selected="YES"/>
                                                         <segment label="Clear" imageScaling="none" tag="1"/>
                                                         <segment label="Black"/>
-                                                        <segment label="Gradient"/>
                                                     </segments>
                                                 </segmentedCell>
                                             </segmentedControl>

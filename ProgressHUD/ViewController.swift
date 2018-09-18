@@ -71,7 +71,6 @@ class ViewController: NSViewController {
         case 0: return .none
         case 1: return .clear
         case 2: return .black
-        case 3: return .gradient
         default: return .none
         }
     }

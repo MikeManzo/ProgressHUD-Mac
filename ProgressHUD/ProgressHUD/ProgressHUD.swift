@@ -29,8 +29,7 @@ enum ProgressHUDStyle {
 enum ProgressHUDMaskType {
     case none // default mask type, allow user interactions while HUD is displayed
     case clear // don't allow user interactions with background objects
-    case black // don't allow user interactions with background objects and dim the UI in the back of the HUD (as seen in iOS 7 and above)
-    case gradient // don't allow user interactions with background objects and dim the UI with a a-la UIAlertView background gradient (as seen in iOS 6)
+    case black // don't allow user interactions with background objects and dim the UI in the back of the HUD
     case custom // don't allow user interactions with background objects and dim the UI in the back of the HUD with a custom color (customMaskTypeColor)
 }
 
@@ -459,20 +458,7 @@ private class ProgressHUD: NSView {
         layoutSubviews()
         NSGraphicsContext.saveGraphicsState()
         guard let context = NSGraphicsContext.current?.cgContext else { return }
-        if settings.maskType == .gradient {
-            // Gradient colours
-            let gradLocationsNum: size_t = 2
-            let gradLocations: [CGFloat] = [0.0, 1.0]
-            let gradColors: [CGFloat] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.75]
-            let colorSpace = CGColorSpaceCreateDeviceRGB()
-            let gradient = CGGradient(colorSpace: colorSpace, colorComponents: gradColors, locations: gradLocations, count: gradLocationsNum)!
-            // Gradient center
-            let gradCenter = CGPoint(x: bounds.size.width / 2, y: bounds.size.height / 2)
-            // Gradient radius
-            let gradRadius = min(bounds.size.width, bounds.size.height)
-            // Gradient draw
-            context.drawRadialGradient(gradient, startCenter: gradCenter, startRadius: 0, endCenter: gradCenter, endRadius: gradRadius, options: CGGradientDrawingOptions.drawsAfterEndLocation)
-        } else if settings.maskType == .black {
+        if settings.maskType == .black {
             context.setFillColor(NSColor.black.withAlphaComponent(0.6).cgColor)
             rect.fill()
         } else if settings.maskType == .custom {
