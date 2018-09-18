@@ -14,8 +14,8 @@ enum ProgressHUDMode {
     case determinate // Progress is shown using a round, pie-chart like, progress view.
     case error // Shows an error icon and the text labels.
     case success // Shows a success icon and the text labels.
-    case customView // Shows a custom view and the text labels.
     case text // Shows only the text labels labels.
+    case custom(view: NSView) // Shows a custom view and the text labels.
 }
 
 // ProgressHUD theme
@@ -51,7 +51,6 @@ struct ProgressHUDSettings {
     var titleColor = NSColor.black
     var messageFont = NSFont.systemFont(ofSize: 16)
     var messageColor = NSColor.black
-    var customView: NSView? // The view to be shown when the HUD is in ProgressHUDModeCustomView.
     var opacity: CGFloat = 0.9 // The opacity of the HUD window.
     var backgroundColor: NSColor = .white // The color of the HUD window.
     var tintColor: NSColor = .black // The color of the text and details.
@@ -320,10 +319,10 @@ private class ProgressHUD: NSView {
     }
 
     private func updateIndicators() {
-        let isActivityIndicator = indicator?.layer is ProgressIndicatorLayer
 
-        if settings.mode == .indeterminate && !isActivityIndicator {
+        switch settings.mode {
 
+        case .indeterminate:
             indicator?.removeFromSuperview()
             let view = NSView(frame: NSRect(x: 0, y: 0, width: settings.spinsize, height: settings.spinsize))
             view.wantsLayer = true
@@ -332,12 +331,12 @@ private class ProgressHUD: NSView {
             indicator = view
             addSubview(indicator!)
 
-        } else if settings.mode == .determinate || settings.mode == .text {
+        case .determinate, .text, .success, .error:
 
             indicator?.removeFromSuperview()
             indicator = nil
 
-        } else if settings.mode == .customView, let view = settings.customView, view != indicator {
+        case let .custom(view):
 
             indicator?.removeFromSuperview()
             indicator = view
@@ -372,8 +371,9 @@ private class ProgressHUD: NSView {
         let maxWidth = bounds.size.width - settings.margin * 4
         var totalSize = CGSize.zero
         var indicatorF = indicator?.bounds ?? .zero
-        if settings.mode == .determinate {
-            indicatorF.size.height = settings.spinsize
+        switch settings.mode {
+        case .determinate: indicatorF.size.height = settings.spinsize
+        default: break
         }
         indicatorF.size.width = min(indicatorF.size.width, maxWidth)
         totalSize.width = max(totalSize.width, indicatorF.size.width)
@@ -486,7 +486,9 @@ private class ProgressHUD: NSView {
         context.closePath()
         context.fillPath()
 
-        if settings.mode == .determinate {
+        switch settings.mode {
+        case .determinate:
+
             // Draw progress
             let lineWidth: CGFloat = 5.0
             let processBackgroundPath = NSBezierPath()
@@ -507,6 +509,9 @@ private class ProgressHUD: NSView {
             processPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
             context.setFillColor(tintColor.cgColor)
             processPath.stroke()
+
+        default:
+            break
         }
 
         NSGraphicsContext.restoreGraphicsState()

@@ -38,12 +38,10 @@ class ViewController: NSViewController {
     }
 
     @IBAction func showCustomView(_ sender: Any) {
-        var settings = demoSettings
         let image = NSImage(named: "unicorn")!
         let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
         imageView.image = image
-        settings.customView = imageView
-        view.showProgressHUD(title: "Custom View", message: "I am not a horse", mode: .customView, settings: settings, duration: 2)
+        view.showProgressHUD(title: "Custom View", message: "I am not a horse", mode: .custom(view: imageView), settings: demoSettings, duration: 2)
     }
 
     @IBAction func showTextOnly(_ sender: Any) {
