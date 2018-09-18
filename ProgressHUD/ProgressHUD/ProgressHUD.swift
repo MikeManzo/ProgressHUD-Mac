@@ -30,7 +30,7 @@ enum ProgressHUDMaskType {
     case none // default mask type, allow user interactions while HUD is displayed
     case clear // don't allow user interactions with background objects
     case black // don't allow user interactions with background objects and dim the UI in the back of the HUD
-    case custom // don't allow user interactions with background objects and dim the UI in the back of the HUD with a custom color (customMaskTypeColor)
+    case custom(color: NSColor) // don't allow user interactions with background objects and dim the UI in the back of the HUD with a custom color
 }
 
 // ProgressHUD position inside the view
@@ -58,7 +58,6 @@ struct ProgressHUDSettings {
     var margin: CGFloat = 20.0 // The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views).
     var padding: CGFloat = 4.0 // The amount of space between the HUD elements (labels, indicators or custom views).
     var cornerRadius: CGFloat = 10.0 // The corner radius for th HUD
-    var customMaskTypeColor = NSColor.black.withAlphaComponent(0.6) // This color will be used as the view background when maskType is set to .custom.
     var dismissible = true // Allow User to dismiss HUD manually by a tap event
     var removeFromSuperViewOnHide = true // Removes the HUD from its parent view when hidden.
     var square = false // Force the HUD dimensions to be equal if possible.
@@ -308,8 +307,9 @@ private class ProgressHUD: NSView {
     }
 
     override func mouseDown(with theEvent: NSEvent) {
-        if settings.maskType == .none {
-            super.mouseDown(with: theEvent)
+        switch settings.maskType {
+        case .none: super.mouseDown(with: theEvent)
+        default: break
         }
         if settings.dismissible {
             performSelector(onMainThread: #selector(cleanUp), with: nil, waitUntilDone: true)
@@ -456,12 +456,15 @@ private class ProgressHUD: NSView {
         layoutSubviews()
         NSGraphicsContext.saveGraphicsState()
         guard let context = NSGraphicsContext.current?.cgContext else { return }
-        if settings.maskType == .black {
+        switch settings.maskType {
+        case .black:
             context.setFillColor(NSColor.black.withAlphaComponent(0.6).cgColor)
             rect.fill()
-        } else if settings.maskType == .custom {
-            context.setFillColor(settings.customMaskTypeColor.cgColor)
+        case let .custom(color):
+            context.setFillColor(color.cgColor)
             rect.fill()
+        default:
+            break
         }
 
         // Set background rect color

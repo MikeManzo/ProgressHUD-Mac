@@ -70,7 +70,7 @@ class ViewController: NSViewController {
         case 0: return .none
         case 1: return .clear
         case 2: return .black
-        default: return .none
+        default: return .custom(color: NSColor.green.withAlphaComponent(0.6))
         }
     }
 

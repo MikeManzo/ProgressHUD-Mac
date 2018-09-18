@@ -789,7 +789,7 @@
                                         </customSpacing>
                                     </stackView>
                                     <stackView distribution="fill" orientation="horizontal" alignment="centerY" spacing="10" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5Dd-Yt-Mgq">
-                                        <rect key="frame" x="164" y="41" width="220" height="21"/>
+                                        <rect key="frame" x="128" y="41" width="292" height="21"/>
                                         <subviews>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="b6E-Hs-4VI">
                                                 <rect key="frame" x="-2" y="2" width="40" height="17"/>
@@ -800,13 +800,14 @@
                                                 </textFieldCell>
                                             </textField>
                                             <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="f0a-Dq-pxu">
-                                                <rect key="frame" x="44" y="-2" width="178" height="24"/>
+                                                <rect key="frame" x="44" y="-2" width="250" height="24"/>
                                                 <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="4i6-NC-rgF">
                                                     <font key="font" metaFont="system"/>
                                                     <segments>
                                                         <segment label="None" selected="YES"/>
                                                         <segment label="Clear" imageScaling="none" tag="1"/>
                                                         <segment label="Black"/>
+                                                        <segment label="Custom"/>
                                                     </segments>
                                                 </segmentedCell>
                                             </segmentedControl>
