@@ -22,7 +22,7 @@ enum ProgressHUDMode {
 enum ProgressHUDStyle {
     case light // light HUD background with dark text and progress indicator
     case dark // dark HUD background with light text and progress indicator
-    case custom // uses the ProgressHUDSettings's backgroundColor and tintColor
+    case custom // uses the ProgressHUDSettings's backgroundColor and foregroundColor
 }
 
 // ProgressHUD mask for the view around of the HUD
@@ -53,7 +53,7 @@ struct ProgressHUDSettings {
     var messageColor = NSColor.black
     var opacity: CGFloat = 0.9 // The opacity of the HUD window.
     var backgroundColor: NSColor = .white // The color of the HUD window.
-    var tintColor: NSColor = .black // The color of the text and details.
+    var foregroundColor: NSColor = .black // The color of the text and details.
     var xOffset: CGFloat = 0.0 // The x-axis offset of the HUD relative to the centre of the superview. (ProgressHUDPosition has to be custom)
     var yOffset: CGFloat = 0.0 // The y-axis offset of the HUD relative to the centre of the superview. (ProgressHUDPosition has to be custom)
     var spinsize: CGFloat = 60.0 // The size both horizontally and vertically of the spinner
@@ -180,11 +180,11 @@ private class ProgressHUD: NSView {
         }
     }
 
-    private var tintColor: NSColor {
+    private var foregroundColor: NSColor {
         switch settings.style {
         case .light: return .black
         case .dark: return .init(white: 0.95, alpha: 1)
-        case .custom: return settings.tintColor
+        case .custom: return settings.foregroundColor
         }
     }
 
@@ -207,7 +207,7 @@ private class ProgressHUD: NSView {
         bounds.origin.y = 0.0
         self.init(frame: bounds)
         self.settings = settings
-        progressIndicator = ProgressIndicatorLayer(size: settings.spinsize, color: tintColor)
+        progressIndicator = ProgressIndicatorLayer(size: settings.spinsize, color: foregroundColor)
         setupLabels()
         updateIndicators()
     }
@@ -230,7 +230,7 @@ private class ProgressHUD: NSView {
         titleLabel.alignment = .center
         titleLabel.layer?.isOpaque = false
         titleLabel.backgroundColor = .clear
-        titleLabel.textColor = tintColor
+        titleLabel.textColor = foregroundColor
         titleLabel.font = settings.titleFont
         titleLabel.string = title
         titleLabel.sizeToFit()
@@ -242,7 +242,7 @@ private class ProgressHUD: NSView {
         messageLabel.alignment = .center
         messageLabel.layer?.isOpaque = false
         messageLabel.backgroundColor = .clear
-        messageLabel.textColor = tintColor
+        messageLabel.textColor = foregroundColor
         messageLabel.font = settings.messageFont
         messageLabel.string = message
         messageLabel.sizeToFit()
@@ -500,14 +500,14 @@ private class ProgressHUD: NSView {
             let startAngle: CGFloat = 90
             var endAngle = startAngle - 360 * CGFloat(progress)
             processBackgroundPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-            context.setStrokeColor(tintColor.cgColor)
+            context.setStrokeColor(foregroundColor.cgColor)
             processBackgroundPath.stroke()
             let processPath = NSBezierPath()
             processPath.lineCapStyle = .round
             processPath.lineWidth = lineWidth
             endAngle = startAngle - .pi * 2
             processPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-            context.setFillColor(tintColor.cgColor)
+            context.setFillColor(foregroundColor.cgColor)
             processPath.stroke()
 
         default:
