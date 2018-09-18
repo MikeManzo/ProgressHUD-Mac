@@ -22,7 +22,7 @@ enum ProgressHUDMode {
 enum ProgressHUDStyle {
     case light // light HUD background with dark text and progress indicator
     case dark // dark HUD background with light text and progress indicator
-    case custom // uses the ProgressHUDSettings's backgroundColor and foregroundColor
+    case custom(foreground: NSColor, backgroud: NSColor) // custom style
 }
 
 // ProgressHUD mask for the view around of the HUD
@@ -52,8 +52,6 @@ struct ProgressHUDSettings {
     var messageFont = NSFont.systemFont(ofSize: 16)
     var messageColor = NSColor.black
     var opacity: CGFloat = 0.9 // The opacity of the HUD window.
-    var backgroundColor: NSColor = .white // The color of the HUD window.
-    var foregroundColor: NSColor = .black // The color of the text and details.
     var xOffset: CGFloat = 0.0 // The x-axis offset of the HUD relative to the centre of the superview. (ProgressHUDPosition has to be custom)
     var yOffset: CGFloat = 0.0 // The y-axis offset of the HUD relative to the centre of the superview. (ProgressHUDPosition has to be custom)
     var spinsize: CGFloat = 60.0 // The size both horizontally and vertically of the spinner
@@ -176,7 +174,7 @@ private class ProgressHUD: NSView {
         switch settings.style {
         case .light: return .white
         case .dark: return .black
-        case .custom: return settings.backgroundColor
+        case let .custom(_, background): return background
         }
     }
 
@@ -184,7 +182,7 @@ private class ProgressHUD: NSView {
         switch settings.style {
         case .light: return .black
         case .dark: return .init(white: 0.95, alpha: 1)
-        case .custom: return settings.foregroundColor
+        case let .custom(foreground, _): return foreground
         }
     }
 

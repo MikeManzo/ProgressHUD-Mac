@@ -60,7 +60,8 @@ class ViewController: NSViewController {
     private var hudStyle: ProgressHUDStyle {
         switch styleSegmentedControl.selectedSegment {
         case 0: return .light
-        default: return .dark
+        case 1: return .dark
+        default: return .custom(foreground: .yellow, backgroud: .red)
         }
     }
 

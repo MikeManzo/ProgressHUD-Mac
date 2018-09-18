@@ -757,7 +757,7 @@
                                         <rect key="frame" x="226" y="121" width="96" height="5"/>
                                     </box>
                                     <stackView distribution="fill" orientation="horizontal" alignment="centerY" spacing="10" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7OP-Gx-wrY">
-                                        <rect key="frame" x="194" y="82" width="159" height="21"/>
+                                        <rect key="frame" x="158" y="82" width="231" height="21"/>
                                         <subviews>
                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8CW-cY-rrK">
                                                 <rect key="frame" x="-2" y="2" width="42" height="17"/>
@@ -768,12 +768,13 @@
                                                 </textFieldCell>
                                             </textField>
                                             <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="L3A-S5-abW">
-                                                <rect key="frame" x="46" y="-2" width="115" height="24"/>
+                                                <rect key="frame" x="46" y="-2" width="187" height="24"/>
                                                 <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="oQu-yn-v1O">
                                                     <font key="font" metaFont="system"/>
                                                     <segments>
                                                         <segment label="Light" selected="YES"/>
                                                         <segment label="Dark" imageScaling="none" tag="1"/>
+                                                        <segment label="Custom"/>
                                                     </segments>
                                                 </segmentedCell>
                                             </segmentedControl>
