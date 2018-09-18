@@ -23,6 +23,23 @@ enum ProgressHUDStyle {
     case light // light HUD background with dark text and progress indicator
     case dark // dark HUD background with light text and progress indicator
     case custom(foreground: NSColor, backgroud: NSColor) // custom style
+
+    var backgroundColor: NSColor {
+        switch self {
+        case .light: return .white
+        case .dark: return .black
+        case let .custom(_, background): return background
+        }
+    }
+
+    var foregroundColor: NSColor {
+        switch self {
+        case .light: return .black
+        case .dark: return .init(white: 0.95, alpha: 1)
+        case let .custom(foreground, _): return foreground
+        }
+    }
+
 }
 
 // ProgressHUD mask for the view around of the HUD
@@ -42,10 +59,6 @@ enum ProgressHUDPosition {
 
 // Use this for detailed customization of the ProgressHUD
 struct ProgressHUDSettings {
-    var mode: ProgressHUDMode = .indeterminate
-    var style: ProgressHUDStyle = .light
-    var maskType = ProgressHUDMaskType.clear
-    var position: ProgressHUDPosition = .bottom
     var titleFont = NSFont.boldSystemFont(ofSize: 18)
     var titleColor = NSColor.black
     var messageFont = NSFont.systemFont(ofSize: 16)
@@ -65,16 +78,21 @@ extension NSView {
     func showProgressHUD(title: String,
                          message: String,
                          mode: ProgressHUDMode = .indeterminate,
-                         settings: ProgressHUDSettings = ProgressHUDSettings(),
-                         duration: TimeInterval = 0) {
+                         style: ProgressHUDStyle = .light,
+                         maskType: ProgressHUDMaskType = .clear,
+                         position: ProgressHUDPosition = .bottom,
+                         duration: TimeInterval = 0,
+                         settings: ProgressHUDSettings = ProgressHUDSettings()) {
 
         if let hud = ProgressHUD.hud(in: self) {
             hud.hide(false) // remove any hud that may be in the view
         }
-
-        var s = settings
-        s.mode = mode
-        let hud = ProgressHUD(view: self, settings: s)
+        let hud = ProgressHUD(view: self,
+                              mode: mode,
+                              style: style,
+                              maskType: maskType,
+                              position: position,
+                              settings: settings)
         hud.title = title
         hud.message = message
         addSubview(hud)
@@ -104,8 +122,6 @@ extension NSView {
 typealias ProgressHUDCompletionBlock = () -> Void
 
 private class ProgressHUD: NSView {
-
-    private var settings = ProgressHUDSettings()
 
     /// A block that gets called after the HUD is completely hidden.
     var completionBlock: ProgressHUDCompletionBlock?
@@ -142,6 +158,11 @@ private class ProgressHUD: NSView {
 
     // MARK: - Private Properties
 
+    private var settings = ProgressHUDSettings()
+    private var mode: ProgressHUDMode = .indeterminate
+    private var style: ProgressHUDStyle = .light
+    private var maskType: ProgressHUDMaskType = .clear
+    private var position: ProgressHUDPosition = .bottom
     private var indicator: NSView?
     private var progressIndicator: ProgressIndicatorLayer!
     private var size = CGSize.zero
@@ -152,26 +173,10 @@ private class ProgressHUD: NSView {
     private var rotationTransform: CGAffineTransform = .identity
 
     private var yOffset: CGFloat {
-        switch settings.position {
+        switch position {
         case .top: return -bounds.size.height / 5
         case .center: return 0
         case .bottom: return bounds.size.height / 5
-        }
-    }
-
-    private var backgroundColor: NSColor {
-        switch settings.style {
-        case .light: return .white
-        case .dark: return .black
-        case let .custom(_, background): return background
-        }
-    }
-
-    private var foregroundColor: NSColor {
-        switch settings.style {
-        case .light: return .black
-        case .dark: return .init(white: 0.95, alpha: 1)
-        case let .custom(foreground, _): return foreground
         }
     }
 
@@ -188,13 +193,22 @@ private class ProgressHUD: NSView {
     // MARK: - Lifecycle
 
     // A convenience constructor that initializes the HUD with the view's bounds.
-    convenience init(view: NSView, settings: ProgressHUDSettings = ProgressHUDSettings()) {
+    convenience init(view: NSView,
+                     mode: ProgressHUDMode,
+                     style: ProgressHUDStyle,
+                     maskType: ProgressHUDMaskType,
+                     position: ProgressHUDPosition,
+                     settings: ProgressHUDSettings = ProgressHUDSettings()) {
         var bounds = view.frame
         bounds.origin.x = 0.0
         bounds.origin.y = 0.0
         self.init(frame: bounds)
+        self.mode = mode
+        self.style = style
+        self.maskType = maskType
+        self.position = position
         self.settings = settings
-        progressIndicator = ProgressIndicatorLayer(size: settings.spinsize, color: foregroundColor)
+        progressIndicator = ProgressIndicatorLayer(size: settings.spinsize, color: style.foregroundColor)
         setupLabels()
         updateIndicators()
     }
@@ -217,7 +231,7 @@ private class ProgressHUD: NSView {
         titleLabel.alignment = .center
         titleLabel.layer?.isOpaque = false
         titleLabel.backgroundColor = .clear
-        titleLabel.textColor = foregroundColor
+        titleLabel.textColor = style.foregroundColor
         titleLabel.font = settings.titleFont
         titleLabel.string = title
         titleLabel.sizeToFit()
@@ -229,7 +243,7 @@ private class ProgressHUD: NSView {
         messageLabel.alignment = .center
         messageLabel.layer?.isOpaque = false
         messageLabel.backgroundColor = .clear
-        messageLabel.textColor = foregroundColor
+        messageLabel.textColor = style.foregroundColor
         messageLabel.font = settings.messageFont
         messageLabel.string = message
         messageLabel.sizeToFit()
@@ -297,7 +311,7 @@ private class ProgressHUD: NSView {
     }
 
     override func mouseDown(with theEvent: NSEvent) {
-        switch settings.maskType {
+        switch maskType {
         case .none: super.mouseDown(with: theEvent)
         default: break
         }
@@ -308,7 +322,7 @@ private class ProgressHUD: NSView {
 
     private func updateIndicators() {
 
-        switch settings.mode {
+        switch mode {
 
         case .indeterminate:
             indicator?.removeFromSuperview()
@@ -359,7 +373,7 @@ private class ProgressHUD: NSView {
         let maxWidth = bounds.size.width - settings.margin * 4
         var totalSize = CGSize.zero
         var indicatorF = indicator?.bounds ?? .zero
-        switch settings.mode {
+        switch mode {
         case .determinate: indicatorF.size.height = settings.spinsize
         default: break
         }
@@ -446,7 +460,7 @@ private class ProgressHUD: NSView {
         layoutSubviews()
         NSGraphicsContext.saveGraphicsState()
         guard let context = NSGraphicsContext.current?.cgContext else { return }
-        switch settings.maskType {
+        switch maskType {
         case .black:
             context.setFillColor(NSColor.black.withAlphaComponent(0.6).cgColor)
             rect.fill()
@@ -458,7 +472,7 @@ private class ProgressHUD: NSView {
         }
 
         // Set background rect color
-        context.setFillColor(backgroundColor.withAlphaComponent(settings.opacity).cgColor)
+        context.setFillColor(style.backgroundColor.withAlphaComponent(settings.opacity).cgColor)
 
         // Center HUD
         let allRect = bounds
@@ -477,7 +491,7 @@ private class ProgressHUD: NSView {
         context.closePath()
         context.fillPath()
 
-        switch settings.mode {
+        switch mode {
         case .determinate:
 
             // Draw progress
@@ -491,14 +505,14 @@ private class ProgressHUD: NSView {
             let startAngle: CGFloat = 90
             var endAngle = startAngle - 360 * CGFloat(progress)
             processBackgroundPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-            context.setStrokeColor(foregroundColor.cgColor)
+            context.setStrokeColor(style.foregroundColor.cgColor)
             processBackgroundPath.stroke()
             let processPath = NSBezierPath()
             processPath.lineCapStyle = .round
             processPath.lineWidth = lineWidth
             endAngle = startAngle - .pi * 2
             processPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
-            context.setFillColor(foregroundColor.cgColor)
+            context.setFillColor(style.foregroundColor.cgColor)
             processPath.stroke()
 
         default:
