@@ -18,7 +18,7 @@ The ProgressHUD spans over the entire view it is attached to.
 - [x] Easy to use API as extension to NSView
 - [x] Sensible defaults for one line instantiation
 - [x] Highly customizable theme and settings
-- [x] Option to revent user operations on components below the view.
+- [x] Option to prevent user operations on components below the view.
 
 ## Requirements
 
@@ -38,19 +38,41 @@ The ProgressHUD spans over the entire view it is attached to.
 
 One liner:
 ```swift
-view.showProgressHUD(title: "Doing Stuff", message: "Completing something…", mode: .indeterminate, duration: 2)
+view.showProgressHUD(title: "Error", message: "Message",  mode: .error, duration: 2)
 ```
-Customized:
+Basic customization:
+```swift
+view.showProgressHUD(title: "Doing Stuff",
+                     message: "Completing something…",
+                     mode: .indeterminate,
+                     style: .light,
+                     maskType: .black,
+                     position: .center,
+                     duration: 2)
+```
+Advanced customization:
 ```swift
 var settings = ProgressHUDSettings()
-settings.mode = .indeterminate
-settings.maskType = .black
-settings.style = .light
-settings.position = .center
+settings.titleFont = NSFont.boldSystemFont(ofSize: 20)
+settings.messageFont = NSFont.systemFont(ofSize: 18)
+settings.opacity = 0.8
+settings.spinnerSize = 40
+settings.margin = 10
+settings.padding = 8
+settings.cornerRadius = 15
+settings.dismissible = false
+settings.square = true
+
 let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
-imageView.image = NSImage(named: "Pluto")
-settings.customView = imageView
-view.showProgressHUD(title: "Fact", message: "Pluto is not a planet", mode: .customView, settings: settings, duration: 4)
+imageView.image = NSImage(named: "unicorn")!
+view.showProgressHUD(title: "Custom View",
+                     message: "I am not a horse",
+                     mode: .custom(view: imageView),
+                     style: hudStyle,
+                     maskType: hudMaskType,
+                     position: hudPosition,
+                     duration: 4,
+                     settings: settings)
 ```
 Setting the duration to 0 shows the ProgressHUD indefinitely. To Hide it:
 ```swift
@@ -65,7 +87,6 @@ view.setProgressHUDProgress(progress)
 ## Todo's
 
 - [ ] Add support for Cocoapods
-- [ ] Implement remening modes ```error``` and ```success```
 - [ ] Look into Mojave's dark mode
 - [ ] Add tests
 
