@@ -18,7 +18,8 @@ The ProgressHUD spans over the entire view it is attached to.
 - [x] Easy to use API as extension to NSView
 - [x] Sensible defaults for one line instantiation
 - [x] Highly customizable theme and settings
-- [x] Option to prevent user operations on components below the view.
+- [x] Option to prevent user operations on components below the view
+- [x] Optional completion handler called when HUD is completely hidden
 
 ## Requirements
 
@@ -72,7 +73,9 @@ view.showProgressHUD(title: "Custom View",
                      maskType: hudMaskType,
                      position: hudPosition,
                      duration: 4,
-                     settings: settings)
+                     settings: settings) {
+    print("Finished showing custom HUD")
+}
 ```
 Setting the duration to 0 shows the ProgressHUD indefinitely. To Hide it:
 ```swift
