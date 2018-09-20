@@ -57,19 +57,18 @@ enum ProgressHUDPosition {
     case bottom
 }
 
-// Use this for detailed customization of the ProgressHUD
+// Use this for advanced customization of the ProgressHUD
 struct ProgressHUDSettings {
     var titleFont = NSFont.boldSystemFont(ofSize: 18)
     var titleColor = NSColor.black
     var messageFont = NSFont.systemFont(ofSize: 16)
     var messageColor = NSColor.black
     var opacity: CGFloat = 0.9 // The opacity of the HUD window.
-    var spinsize: CGFloat = 60.0 // The size both horizontally and vertically of the spinner
-    var margin: CGFloat = 20.0 // The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views).
-    var padding: CGFloat = 4.0 // The amount of space between the HUD elements (labels, indicators or custom views).
+    var spinnerSize: CGFloat = 60.0 // The size both horizontally and vertically of the spinner
+    var margin: CGFloat = 20.0 // The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views)
+    var padding: CGFloat = 4.0 // The amount of space between the HUD elements (labels, indicators or custom views)
     var cornerRadius: CGFloat = 10.0 // The corner radius for th HUD
     var dismissible = true // Allow User to dismiss HUD manually by a tap event
-    var removeFromSuperViewOnHide = true // Removes the HUD from its parent view when hidden.
     var square = false // Force the HUD dimensions to be equal if possible.
 }
 
@@ -208,7 +207,7 @@ private class ProgressHUD: NSView {
         self.maskType = maskType
         self.position = position
         self.settings = settings
-        progressIndicator = ProgressIndicatorLayer(size: settings.spinsize, color: style.foregroundColor)
+        progressIndicator = ProgressIndicatorLayer(size: settings.spinnerSize, color: style.foregroundColor)
         setupLabels()
         updateIndicators()
     }
@@ -302,9 +301,7 @@ private class ProgressHUD: NSView {
         isFinished = true
         alphaValue = 0.0
         isHidden = true
-        if settings.removeFromSuperViewOnHide {
-            removeFromSuperview()
-        }
+        removeFromSuperview()
         completionBlock?()
         completionBlock = nil
         indicator = nil
@@ -326,7 +323,7 @@ private class ProgressHUD: NSView {
 
         case .indeterminate:
             indicator?.removeFromSuperview()
-            let view = NSView(frame: NSRect(x: 0, y: 0, width: settings.spinsize, height: settings.spinsize))
+            let view = NSView(frame: NSRect(x: 0, y: 0, width: settings.spinnerSize, height: settings.spinnerSize))
             view.wantsLayer = true
             progressIndicator.startProgressAnimation()
             view.layer?.addSublayer(progressIndicator)
@@ -374,7 +371,7 @@ private class ProgressHUD: NSView {
         var totalSize = CGSize.zero
         var indicatorF = indicator?.bounds ?? .zero
         switch mode {
-        case .determinate: indicatorF.size.height = settings.spinsize
+        case .determinate: indicatorF.size.height = settings.spinnerSize
         default: break
         }
         indicatorF.size.width = min(indicatorF.size.width, maxWidth)
@@ -500,8 +497,8 @@ private class ProgressHUD: NSView {
             processBackgroundPath.lineWidth = lineWidth
             processBackgroundPath.lineCapStyle = .round
 
-            let center = CGPoint(x: boxRect.origin.x + boxRect.size.width / 2, y: boxRect.origin.y + boxRect.size.height - settings.spinsize * 0.9)
-            let radius = settings.spinsize / 2
+            let center = CGPoint(x: boxRect.origin.x + boxRect.size.width / 2, y: boxRect.origin.y + boxRect.size.height - settings.spinnerSize * 0.9)
+            let radius = settings.spinnerSize / 2
             let startAngle: CGFloat = 90
             var endAngle = startAngle - 360 * CGFloat(progress)
             processBackgroundPath.appendArc(withCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
