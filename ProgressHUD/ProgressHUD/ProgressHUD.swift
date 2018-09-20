@@ -177,16 +177,6 @@ private class ProgressHUD: NSView {
         }
     }
 
-    // MARK: - Class methods
-
-    // Finds the top-most HUD subview and returns it.
-    class func hud(in view: NSView) -> ProgressHUD? {
-        for subview in view.subviews where subview is ProgressHUD {
-            return subview as? ProgressHUD
-        }
-        return nil
-    }
-
     // MARK: - Lifecycle
 
     // A convenience constructor that initializes the HUD with the view's bounds.
@@ -245,6 +235,16 @@ private class ProgressHUD: NSView {
         messageLabel.string = message
         messageLabel.sizeToFit()
         addSubview(messageLabel)
+    }
+
+    // MARK: - Class methods
+
+    // Finds the top-most HUD subview and returns it.
+    class func hud(in view: NSView) -> ProgressHUD? {
+        for subview in view.subviews where subview is ProgressHUD {
+            return subview as? ProgressHUD
+        }
+        return nil
     }
 
     // MARK: - Show & Hide
@@ -368,7 +368,7 @@ private class ProgressHUD: NSView {
         var totalSize = CGSize.zero
         var indicatorF = indicator?.bounds ?? .zero
         switch mode {
-        case .determinate: indicatorF.size.height = settings.spinnerSize
+        case .determinate, .success, .error: indicatorF.size.height = settings.spinnerSize
         default: break
         }
         indicatorF.size.width = min(indicatorF.size.width, maxWidth)
@@ -485,16 +485,16 @@ private class ProgressHUD: NSView {
         context.closePath()
         context.fillPath()
 
+        let center = CGPoint(x: boxRect.origin.x + boxRect.size.width / 2, y: boxRect.origin.y + boxRect.size.height - settings.spinnerSize * 0.9)
         switch mode {
         case .determinate:
 
-            // Draw progress
-            let lineWidth: CGFloat = 5.0
+            // Draw determinate progress
+            let lineWidth: CGFloat = 4.0
             let processBackgroundPath = NSBezierPath()
             processBackgroundPath.lineWidth = lineWidth
             processBackgroundPath.lineCapStyle = .round
 
-            let center = CGPoint(x: boxRect.origin.x + boxRect.size.width / 2, y: boxRect.origin.y + boxRect.size.height - settings.spinnerSize * 0.9)
             let radius = settings.spinnerSize / 2
             let startAngle: CGFloat = 90
             var endAngle = startAngle - 360 * CGFloat(progress)
@@ -509,11 +509,41 @@ private class ProgressHUD: NSView {
             context.setFillColor(style.foregroundColor.cgColor)
             processPath.stroke()
 
+        case .error:
+            drawErrorSymbol(frame: NSRect(x: center.x - settings.spinnerSize / 2, y: center.y - settings.spinnerSize / 2, width: settings.spinnerSize, height: settings.spinnerSize))
+
+        case .success:
+            drawSuccessSymbol(frame: NSRect(x: center.x - settings.spinnerSize / 2, y: center.y - settings.spinnerSize / 2, width: settings.spinnerSize, height: settings.spinnerSize))
+
         default:
             break
         }
 
         NSGraphicsContext.restoreGraphicsState()
+    }
+
+    private func drawErrorSymbol(frame: NSRect) {
+
+        let bezier3Path = NSBezierPath()
+        bezier3Path.move(to: NSPoint(x: frame.minX + 8, y: frame.maxY - 52))
+        bezier3Path.line(to: NSPoint(x: frame.minX + 52, y: frame.maxY - 8))
+        bezier3Path.move(to: NSPoint(x: frame.minX + 52, y: frame.maxY - 52))
+        bezier3Path.line(to: NSPoint(x: frame.minX + 8, y: frame.maxY - 8))
+        style.foregroundColor.setStroke()
+        bezier3Path.lineWidth = 4
+        bezier3Path.stroke()
+    }
+
+    private func drawSuccessSymbol(frame: NSRect) {
+
+        let bezierPath = NSBezierPath()
+        bezierPath.move(to: NSPoint(x: frame.minX + 0.05833 * frame.width, y: frame.minY + 0.48377 * frame.height))
+        bezierPath.line(to: NSPoint(x: frame.minX + 0.31429 * frame.width, y: frame.minY + 0.19167 * frame.height))
+        bezierPath.line(to: NSPoint(x: frame.minX + 0.93333 * frame.width, y: frame.minY + 0.80833 * frame.height))
+        style.foregroundColor.setStroke()
+        bezierPath.lineWidth = 4
+        bezierPath.lineCapStyle = .round
+        bezierPath.stroke()
     }
 
 }

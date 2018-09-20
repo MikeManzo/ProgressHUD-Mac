@@ -10,6 +10,7 @@ import Cocoa
 
 class ViewController: NSViewController {
 
+    @IBOutlet var modeSegmentedControl: NSSegmentedControl!
     @IBOutlet var styleSegmentedControl: NSSegmentedControl!
     @IBOutlet var maskSegmentedControl: NSSegmentedControl!
     @IBOutlet var positionSegmentedControl: NSSegmentedControl!
@@ -19,56 +20,79 @@ class ViewController: NSViewController {
         // Do any additional setup after loading the view.
     }
 
-    @IBAction func showIndeterminate(_ sender: Any) {
-        view.showProgressHUD(title: "Doing Stuff",
-                             message: "Completing something…",
-                             mode: .indeterminate,
-                             style: hudStyle,
-                             maskType: hudMaskType,
-                             position: hudPosition,
-                             duration: 2)
-    }
+    @IBAction func showHUD(_ sender: Any) {
 
-    @IBAction func showDeterminateCircular(_ sender: Any) {
-        view.showProgressHUD(title: "Determinate Progress",
-                             message: "Almost done…",
-                             mode: .determinate,
-                             style: hudStyle,
-                             maskType: hudMaskType,
-                             position: hudPosition)
-        DispatchQueue.global(qos: .default).async {
-            var progress = 0.0
-            for _ in 0..<100 {
-                usleep(10000)
-                progress += 0.01
-                self.view.setProgressHUDProgress(progress)
+        switch modeSegmentedControl.selectedSegment {
+
+        case 0: // Indeterminate
+            view.showProgressHUD(title: "Doing Stuff",
+                                 message: "Completing something…",
+                                 mode: .indeterminate,
+                                 style: hudStyle,
+                                 maskType: hudMaskType,
+                                 position: hudPosition,
+                                 duration: 2)
+
+        case 1: // Determinate
+            view.showProgressHUD(title: "Determinate Progress",
+                                 message: "Almost done…",
+                                 mode: .determinate,
+                                 style: hudStyle,
+                                 maskType: hudMaskType,
+                                 position: hudPosition)
+            DispatchQueue.global(qos: .default).async {
+                var progress = 0.0
+                for _ in 0..<100 {
+                    usleep(10000)
+                    progress += 0.01
+                    self.view.setProgressHUDProgress(progress)
+                }
+                self.view.hideProgressHUD()
+
             }
-            self.view.hideProgressHUD()
 
+        case 2: // Error
+            view.showProgressHUD(title: "Error",
+                                 message: "Something bad happened!",
+                                 mode: .error,
+                                 style: hudStyle,
+                                 maskType: hudMaskType,
+                                 position: hudPosition,
+                                 duration: 2)
+
+        case 3: // Success
+            view.showProgressHUD(title: "Success",
+                                 message: "Everything worked out in the end",
+                                 mode: .success,
+                                 style: hudStyle,
+                                 maskType: hudMaskType,
+                                 position: hudPosition,
+                                 duration: 2)
+
+        case 4: // Text Only
+            view.showProgressHUD(title: "Message 🎸",
+                                 message: "Showing text only.\nOn multiple lines.\nSquashed much?",
+                                 mode: .text,
+                                 style: hudStyle,
+                                 maskType: hudMaskType,
+                                 position: hudPosition,
+                                 duration: 2)
+
+        case 5: // Custom View
+            let image = NSImage(named: "unicorn")!
+            let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
+            imageView.image = image
+            view.showProgressHUD(title: "Custom View",
+                                 message: "I am not a horse",
+                                 mode: .custom(view: imageView),
+                                 style: hudStyle,
+                                 maskType: hudMaskType,
+                                 position: hudPosition,
+                                 duration: 2)
+
+        default:
+            break
         }
-    }
-
-    @IBAction func showCustomView(_ sender: Any) {
-        let image = NSImage(named: "unicorn")!
-        let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
-        imageView.image = image
-        view.showProgressHUD(title: "Custom View",
-                             message: "I am not a horse",
-                             mode: .custom(view: imageView),
-                             style: hudStyle,
-                             maskType: hudMaskType,
-                             position: hudPosition,
-                             duration: 2)
-    }
-
-    @IBAction func showTextOnly(_ sender: Any) {
-        view.showProgressHUD(title: "Message 🎸",
-                             message: "Showing text only.\nOn multiple lines.\nSquashed much?",
-                             mode: .text,
-                             style: hudStyle,
-                             maskType: hudMaskType,
-                             position: hudPosition,
-                             duration: 2)
     }
 
     private var hudStyle: ProgressHUDStyle {
