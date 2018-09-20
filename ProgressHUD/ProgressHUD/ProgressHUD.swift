@@ -164,12 +164,10 @@ private class ProgressHUD: NSView {
     private var position: ProgressHUDPosition = .bottom
     private var indicator: NSView?
     private var progressIndicator: ProgressIndicatorLayer!
-    private var size = CGSize.zero
+    private var size: CGSize = .zero
     private var useAnimation = true
     private let titleLabel = NSText(frame: .zero)
     private let messageLabel = NSText(frame: .zero)
-    private var isFinished = false
-    private var rotationTransform: CGAffineTransform = .identity
 
     private var yOffset: CGFloat {
         switch position {
@@ -298,7 +296,6 @@ private class ProgressHUD: NSView {
     }
 
     private func done() {
-        isFinished = true
         alphaValue = 0.0
         isHidden = true
         removeFromSuperview()
