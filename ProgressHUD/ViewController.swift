@@ -31,7 +31,9 @@ class ViewController: NSViewController {
                                  style: hudStyle,
                                  maskType: hudMaskType,
                                  position: hudPosition,
-                                 duration: 2)
+                                 duration: 2) {
+                print("Finished showing indeterminate HUD")
+            }
 
         case 1: // Determinate
             view.showProgressHUD(title: "Determinate Progress",

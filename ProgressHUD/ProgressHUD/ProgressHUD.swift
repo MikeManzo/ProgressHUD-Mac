@@ -79,7 +79,8 @@ extension NSView {
                          maskType: ProgressHUDMaskType = .clear,
                          position: ProgressHUDPosition = .bottom,
                          duration: TimeInterval = 0,
-                         settings: ProgressHUDSettings = ProgressHUDSettings()) {
+                         settings: ProgressHUDSettings = ProgressHUDSettings(),
+                         completion: ProgressHUDCompletionHandler? = nil) {
 
         if let hud = ProgressHUD.hud(in: self) {
             hud.hide(false) // remove any hud that may be in the view
@@ -89,7 +90,8 @@ extension NSView {
                               style: style,
                               maskType: maskType,
                               position: position,
-                              settings: settings)
+                              settings: settings,
+                              completion: completion)
         hud.title = title
         hud.message = message
         addSubview(hud)
@@ -116,12 +118,9 @@ extension NSView {
     }
 }
 
-typealias ProgressHUDCompletionBlock = () -> Void
+typealias ProgressHUDCompletionHandler = () -> Void
 
 private class ProgressHUD: NSView {
-
-    /// A block that gets called after the HUD is completely hidden.
-    var completionBlock: ProgressHUDCompletionBlock?
 
     /// An optional short message to be displayed below the activity indicator. The HUD is automatically resized to fit the entire text.
     /// If the text is too long it will get clipped by displaying "..." at the end. If left unchanged or set to @"", then no message is displayed.
@@ -166,6 +165,7 @@ private class ProgressHUD: NSView {
     private var useAnimation = true
     private let titleLabel = NSText(frame: .zero)
     private let messageLabel = NSText(frame: .zero)
+    private var completionHandler: ProgressHUDCompletionHandler? // Called after the HUD is completely hidden
 
     private var yOffset: CGFloat {
         switch position {
@@ -183,7 +183,8 @@ private class ProgressHUD: NSView {
                      style: ProgressHUDStyle,
                      maskType: ProgressHUDMaskType,
                      position: ProgressHUDPosition,
-                     settings: ProgressHUDSettings = ProgressHUDSettings()) {
+                     settings: ProgressHUDSettings,
+                     completion: ProgressHUDCompletionHandler?) {
         var bounds = view.frame
         bounds.origin.x = 0.0
         bounds.origin.y = 0.0
@@ -193,6 +194,7 @@ private class ProgressHUD: NSView {
         self.maskType = maskType
         self.position = position
         self.settings = settings
+        completionHandler = completion
         progressIndicator = ProgressIndicatorLayer(size: settings.spinnerSize, color: style.foregroundColor)
         setupLabels()
         updateIndicators()
@@ -297,8 +299,7 @@ private class ProgressHUD: NSView {
         alphaValue = 0.0
         isHidden = true
         removeFromSuperview()
-        completionBlock?()
-        completionBlock = nil
+        completionHandler?()
         indicator = nil
     }
 
