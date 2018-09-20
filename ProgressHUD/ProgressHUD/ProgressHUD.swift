@@ -60,9 +60,7 @@ enum ProgressHUDPosition {
 // Use this for advanced customization of the ProgressHUD
 struct ProgressHUDSettings {
     var titleFont = NSFont.boldSystemFont(ofSize: 18)
-    var titleColor = NSColor.black
     var messageFont = NSFont.systemFont(ofSize: 16)
-    var messageColor = NSColor.black
     var opacity: CGFloat = 0.9 // The opacity of the HUD window.
     var spinnerSize: CGFloat = 60.0 // The size both horizontally and vertically of the spinner
     var margin: CGFloat = 20.0 // The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views)
@@ -76,7 +74,7 @@ extension NSView {
 
     func showProgressHUD(title: String,
                          message: String,
-                         mode: ProgressHUDMode = .indeterminate,
+                         mode: ProgressHUDMode,
                          style: ProgressHUDStyle = .light,
                          maskType: ProgressHUDMaskType = .clear,
                          position: ProgressHUDPosition = .bottom,
