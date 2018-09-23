@@ -57,53 +57,7 @@ enum ProgressHUDPosition {
     case bottom
 }
 
-extension NSView {
-
-    func showProgressHUD(title: String,
-                         message: String,
-                         mode: ProgressHUDMode,
-                         style: ProgressHUDStyle = .light,
-                         maskType: ProgressHUDMaskType = .clear,
-                         position: ProgressHUDPosition = .bottom,
-                         duration: TimeInterval = 0,
-                         completion: ProgressHUDCompletionHandler? = nil) {
-
-        if let hud = ProgressHUD.hud(in: self) {
-            hud.hide(false) // remove any hud that may be in the view
-        }
-//        let hud = ProgressHUD(view: self,
-//                              mode: mode,
-//                              style: style,
-//                              maskType: maskType,
-//                              position: position,
-//                              completion: completion)
-//        hud.title = title
-//        hud. = message
-//        addSubview(hud)
-//        hud.show(true)
-//        if duration > 0 {
-//            hud.hide(true, afterDelay: duration)
-//        }
-    }
-
-    func setProgressHUDProgress(_ progress: Double) {
-        DispatchQueue.main.async {
-            if let hud = ProgressHUD.hud(in: self) {
-                hud.progress = progress
-            }
-        }
-    }
-
-    func hideProgressHUD(afterDelay delay: TimeInterval = 0) {
-        DispatchQueue.main.async {
-            if let hud = ProgressHUD.hud(in: self) {
-                hud.hide(true, afterDelay: delay)
-            }
-        }
-    }
-}
-
-typealias ProgressHUDCompletionHandler = () -> Void
+typealias ProgressHUDDismissCompletion = () -> Void
 
 class ProgressHUD: NSView {
 
@@ -114,6 +68,14 @@ class ProgressHUD: NSView {
         layer?.isOpaque = false
         layer?.backgroundColor = .clear
         alphaValue = 0.0
+
+        messageLabel.font = messageFont
+        messageLabel.isEditable = false
+        messageLabel.isSelectable = false
+        messageLabel.alignment = .center
+        messageLabel.layer?.isOpaque = false
+        messageLabel.backgroundColor = .clear
+        addSubview(messageLabel)
 
         let screen = NSScreen.screens[0]
         let window = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: true, screen: screen)
@@ -146,24 +108,41 @@ class ProgressHUD: NSView {
         guard let view = ProgressHUD.shared.hudView else { return }
         ProgressHUD.shared.frame = view.frame
         ProgressHUD.shared.progressIndicator = ProgressIndicatorLayer(size: ProgressHUD.shared.spinnerSize, color: ProgressHUD.shared.style.foregroundColor)
-        ProgressHUD.shared.setupLabels()
+        ProgressHUD.shared.messageLabel.textColor = ProgressHUD.shared.style.foregroundColor
+        ProgressHUD.shared.messageLabel.font = ProgressHUD.shared.messageFont
+        ProgressHUD.shared.messageLabel.string = status
+        ProgressHUD.shared.messageLabel.sizeToFit()
         ProgressHUD.shared.updateIndicators()
-        ProgressHUD.shared.message = status
         view.addSubview(ProgressHUD.shared)
         ProgressHUD.shared.show(true)
-        ProgressHUD.shared.hide(true, afterDelay: 2)
-
     }
 
-    /// An optional details message displayed below the labelText message. This message is displayed only if the labelText
-    /// property is also set and is different from an empty string (@""). The details text can span multiple lines.
-    private var message = "" {
-        didSet {
-            messageLabel.string = message
-            messageLabel.sizeToFit()
-            needsLayout = true
-            needsDisplay = true
+    class func show(progress: Double) {}
+
+    class func show(progress: Double, status: String) {
+        DispatchQueue.main.async {
+            ProgressHUD.shared.progress = progress
+            ProgressHUD.shared.messageLabel.string = status
+            ProgressHUD.shared.messageLabel.sizeToFit()
         }
+    }
+
+    class func dismiss() {
+        ProgressHUD.shared.hide(true)
+    }
+
+    class func dismiss(completion: ProgressHUDDismissCompletion?) {
+        ProgressHUD.shared.hide(true)
+    }
+
+    class func dismiss(delay: TimeInterval) {
+        DispatchQueue.main.async {
+            ProgressHUD.shared.perform(#selector(hideDelayed(_:)), with: 1, afterDelay: delay)
+        }
+    }
+
+    class func dismiss(delay: TimeInterval, completion: ProgressHUDDismissCompletion?) {
+        ProgressHUD.shared.perform(#selector(hideDelayed(_:)), with: 1, afterDelay: delay)
     }
 
     /// The progress of the progress indicator, from 0.0 to 1.0
@@ -181,7 +160,7 @@ class ProgressHUD: NSView {
     private var size: CGSize = .zero
     private var useAnimation = true
     private let messageLabel = NSText(frame: .zero)
-    private var completionHandler: ProgressHUDCompletionHandler? // Called after the HUD is completely hidden
+    private var completionHandler: ProgressHUDDismissCompletion? // Called after the HUD is completely hidden
 
     private var yOffset: CGFloat {
         switch position {
@@ -212,7 +191,7 @@ class ProgressHUD: NSView {
                      style: ProgressHUDStyle,
                      maskType: ProgressHUDMaskType,
                      position: ProgressHUDPosition,
-                     completion: ProgressHUDCompletionHandler?) {
+                     completion: ProgressHUDDismissCompletion?) {
         var bounds = view.frame
         bounds.origin.x = 0.0
         bounds.origin.y = 0.0
@@ -223,26 +202,11 @@ class ProgressHUD: NSView {
         self.position = position
         completionHandler = completion
         progressIndicator = ProgressIndicatorLayer(size: spinnerSize, color: style.foregroundColor)
-        setupLabels()
         updateIndicators()
     }
 
     required init?(coder decoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    private func setupLabels() {
-        messageLabel.font = messageFont
-        messageLabel.isEditable = false
-        messageLabel.isSelectable = false
-        messageLabel.alignment = .center
-        messageLabel.layer?.isOpaque = false
-        messageLabel.backgroundColor = .clear
-        messageLabel.textColor = style.foregroundColor
-        messageLabel.font = messageFont
-        messageLabel.string = message
-        messageLabel.sizeToFit()
-        addSubview(messageLabel)
     }
 
     // MARK: - Class methods
@@ -257,20 +221,16 @@ class ProgressHUD: NSView {
 
     // MARK: - Show & Hide
 
-    func show(_ animated: Bool) {
+    private func show(_ animated: Bool) {
         useAnimation = animated
         needsDisplay = true
         show(usingAnimation: useAnimation)
     }
 
-    func hide(_ animated: Bool) {
+    private func hide(_ animated: Bool) {
         useAnimation = animated
         NSObject.cancelPreviousPerformRequests(withTarget: self)
         hide(usingAnimation: useAnimation)
-    }
-
-    func hide(_ animated: Bool, afterDelay delay: TimeInterval) {
-        perform(#selector(hideDelayed(_:)), with: animated ? 1 : 0, afterDelay: delay)
     }
 
     private func hide(usingAnimation animated: Bool) {

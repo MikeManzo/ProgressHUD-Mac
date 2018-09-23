@@ -22,87 +22,52 @@ class ViewController: NSViewController {
 
     @IBAction func showHUD(_ sender: Any) {
 
+        ProgressHUD.shared.style = hudStyle
+        ProgressHUD.shared.maskType = hudMaskType
+        ProgressHUD.shared.position = hudPosition
+
         switch modeSegmentedControl.selectedSegment {
 
         case 0: // Indeterminate
-
-            ProgressHUD.show(withStatus: "Test Progress HUD")
-//            let screen = NSScreen.screens[0]
-//            let window = NSWindow(contentRect: screen.frame, styleMask: .fullScreen, backing: .buffered, defer: true, screen: screen)
-//            let windowController = NSWindowController(window: window)
-//            window.collectionBehavior = .fullScreenAuxiliary
-//            windowController.showWindow(self)
-//            window.toggleFullScreen(true)
-//            window.contentView?.wantsLayer = true
-//            window.contentView?.layer?.backgroundColor = .clear
-//            window.backgroundColor = .clear
-//            window.contentView?.showProgressHUD(title: "Doing Stuff",
-//                                                message: "Completing something…",
-//                                                mode: .indeterminate,
-//                                                style: hudStyle,
-//                                                maskType: hudMaskType,
-//                                                position: hudPosition,
-//                                                duration: 2) {
-//                print("Finished showing indeterminate HUD")
-//                windowController.close()
-//            }
+            ProgressHUD.shared.mode = .indeterminate
+            ProgressHUD.show(withStatus: "Indeterminate Progress…")
+            ProgressHUD.dismiss(delay: 2)
 
         case 1: // Determinate
-            view.showProgressHUD(title: "Determinate Progress",
-                                 message: "Almost done…",
-                                 mode: .determinate,
-                                 style: hudStyle,
-                                 maskType: hudMaskType,
-                                 position: hudPosition)
+            ProgressHUD.shared.mode = .determinate
+            ProgressHUD.show(withStatus: "Determinate Progress…")
             DispatchQueue.global(qos: .default).async {
                 var progress = 0.0
                 for _ in 0..<100 {
                     usleep(10000)
                     progress += 0.01
-                    self.view.setProgressHUDProgress(progress)
+                    ProgressHUD.show(progress: progress, status: "Determinate Progress…")
                 }
-                self.view.hideProgressHUD()
-
+                ProgressHUD.dismiss(delay: 1)
             }
 
         case 2: // Error
-            view.showProgressHUD(title: "Error",
-                                 message: "Something bad happened!",
-                                 mode: .error,
-                                 style: hudStyle,
-                                 maskType: hudMaskType,
-                                 position: hudPosition,
-                                 duration: 2)
+            ProgressHUD.shared.mode = .error
+            ProgressHUD.show(withStatus: "Something bad happened!")
+            ProgressHUD.dismiss(delay: 2)
 
         case 3: // Success
-            view.showProgressHUD(title: "Success",
-                                 message: "Everything worked out in the end",
-                                 mode: .success,
-                                 style: hudStyle,
-                                 maskType: hudMaskType,
-                                 position: hudPosition,
-                                 duration: 2)
+            ProgressHUD.shared.mode = .success
+            ProgressHUD.show(withStatus: "Everything worked out in the end")
+            ProgressHUD.dismiss(delay: 2)
 
         case 4: // Text Only
-            view.showProgressHUD(title: "Message 🎸",
-                                 message: "Showing text only.\nOn multiple lines.\nSquashed much?",
-                                 mode: .text,
-                                 style: hudStyle,
-                                 maskType: hudMaskType,
-                                 position: hudPosition,
-                                 duration: 2)
+            ProgressHUD.shared.mode = .text
+            ProgressHUD.show(withStatus: "Showing text only.\nOn multiple lines.\nSquashed much?")
+            ProgressHUD.dismiss(delay: 2)
 
         case 5: // Custom View
             let image = NSImage(named: "unicorn")!
             let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
             imageView.image = image
-            view.showProgressHUD(title: "Custom View",
-                                 message: "I am not a horse",
-                                 mode: .custom(view: imageView),
-                                 style: hudStyle,
-                                 maskType: hudMaskType,
-                                 position: hudPosition,
-                                 duration: 2)
+            ProgressHUD.shared.mode = .custom(view: imageView)
+            ProgressHUD.show(withStatus: "I'm not a horse")
+            ProgressHUD.dismiss(delay: 2)
 
         default:
             break
