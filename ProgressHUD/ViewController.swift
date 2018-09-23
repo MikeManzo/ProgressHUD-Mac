@@ -10,10 +10,11 @@ import Cocoa
 
 class ViewController: NSViewController {
 
-    @IBOutlet var modeSegmentedControl: NSSegmentedControl!
-    @IBOutlet var styleSegmentedControl: NSSegmentedControl!
-    @IBOutlet var maskSegmentedControl: NSSegmentedControl!
-    @IBOutlet var positionSegmentedControl: NSSegmentedControl!
+    @IBOutlet private var locationSegmentedControl: NSSegmentedControl!
+    @IBOutlet private var modeSegmentedControl: NSSegmentedControl!
+    @IBOutlet private var styleSegmentedControl: NSSegmentedControl!
+    @IBOutlet private var maskSegmentedControl: NSSegmentedControl!
+    @IBOutlet private var positionSegmentedControl: NSSegmentedControl!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,9 +23,11 @@ class ViewController: NSViewController {
 
     @IBAction func showHUD(_ sender: Any) {
 
+        // set ProgressHUD defaults according to user selected options
         ProgressHUD.shared.style = hudStyle
         ProgressHUD.shared.maskType = hudMaskType
         ProgressHUD.shared.position = hudPosition
+        ProgressHUD.shared.containerView = locationSegmentedControl.selectedSegment == 0 ? view : nil
 
         switch modeSegmentedControl.selectedSegment {
 

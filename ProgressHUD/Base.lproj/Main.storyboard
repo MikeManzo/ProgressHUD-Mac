@@ -711,8 +711,39 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <stackView distribution="fill" orientation="vertical" alignment="centerX" spacing="20" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VBx-Hj-dLB">
-                                <rect key="frame" x="20" y="100" width="547" height="206"/>
+                                <rect key="frame" x="20" y="80" width="547" height="247"/>
                                 <subviews>
+                                    <stackView distribution="fill" orientation="horizontal" alignment="centerY" spacing="10" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Auf-Rv-Iho" userLabel="Location Stack View">
+                                        <rect key="frame" x="171" y="226" width="205" height="21"/>
+                                        <subviews>
+                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mPc-DC-EVK">
+                                                <rect key="frame" x="-2" y="2" width="56" height="17"/>
+                                                <textFieldCell key="cell" lineBreakMode="clipping" title="Show in:" id="ror-UT-m6w">
+                                                    <font key="font" metaFont="system"/>
+                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                </textFieldCell>
+                                            </textField>
+                                            <segmentedControl verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fTS-iS-rTc">
+                                                <rect key="frame" x="60" y="-2" width="147" height="24"/>
+                                                <segmentedCell key="cell" borderStyle="border" alignment="left" style="rounded" trackingMode="selectOne" id="vB6-sg-GoR">
+                                                    <font key="font" metaFont="system"/>
+                                                    <segments>
+                                                        <segment label="Window" selected="YES"/>
+                                                        <segment label="Screen" imageScaling="none" tag="1"/>
+                                                    </segments>
+                                                </segmentedCell>
+                                            </segmentedControl>
+                                        </subviews>
+                                        <visibilityPriorities>
+                                            <integer value="1000"/>
+                                            <integer value="1000"/>
+                                        </visibilityPriorities>
+                                        <customSpacing>
+                                            <real value="3.4028234663852886e+38"/>
+                                            <real value="3.4028234663852886e+38"/>
+                                        </customSpacing>
+                                    </stackView>
                                     <stackView distribution="fill" orientation="horizontal" alignment="centerY" spacing="10" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QF9-Lf-bh1" userLabel="Mode Stack View">
                                         <rect key="frame" x="16" y="185" width="516" height="21"/>
                                         <subviews>
@@ -869,8 +900,10 @@ DQ
                                     <integer value="1000"/>
                                     <integer value="1000"/>
                                     <integer value="1000"/>
+                                    <integer value="1000"/>
                                 </visibilityPriorities>
                                 <customSpacing>
+                                    <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>
                                     <real value="3.4028234663852886e+38"/>
@@ -890,6 +923,7 @@ DQ
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="locationSegmentedControl" destination="fTS-iS-rTc" id="yrM-kM-9bN"/>
                         <outlet property="maskSegmentedControl" destination="f0a-Dq-pxu" id="UQo-hy-M2y"/>
                         <outlet property="modeSegmentedControl" destination="SEE-M5-3AW" id="a9a-FT-S7C"/>
                         <outlet property="positionSegmentedControl" destination="vq6-a1-qdQ" id="rpE-X8-U3B"/>
