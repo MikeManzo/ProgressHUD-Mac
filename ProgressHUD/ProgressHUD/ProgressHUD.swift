@@ -96,9 +96,12 @@ class ProgressHUD: NSView {
     // MARK: - Customization
 
     var mode: ProgressHUDMode = .indeterminate
-    var style: ProgressHUDStyle = .light
-    var maskType: ProgressHUDMaskType = .clear
-    var position: ProgressHUDPosition = .bottom
+    private var style: ProgressHUDStyle = .light
+    class func setDefaultStyle(_ style: ProgressHUDStyle) { ProgressHUD.shared.style = style }
+    private var maskType: ProgressHUDMaskType = .clear
+    class func setDefaultMaskType(_ maskType: ProgressHUDMaskType) { ProgressHUD.shared.maskType = maskType }
+    private var position: ProgressHUDPosition = .bottom
+    class func setDefaultPosition(_ position: ProgressHUDPosition) { ProgressHUD.shared.position = position }
     var containerView: NSView? // if nil then use default window level
     var messageFont = NSFont.systemFont(ofSize: 18)
     var opacity: CGFloat = 0.9 // The opacity of the HUD window.

@@ -24,9 +24,9 @@ class ViewController: NSViewController {
     @IBAction func showHUD(_ sender: Any) {
 
         // set ProgressHUD defaults according to user selected options
-        ProgressHUD.shared.style = hudStyle
-        ProgressHUD.shared.maskType = hudMaskType
-        ProgressHUD.shared.position = hudPosition
+        applyUserSelectedHUDStyle()
+        applyUserSelectedHUDMaskType()
+        applyUserSelectedHUDPosition()
         ProgressHUD.shared.containerView = locationSegmentedControl.selectedSegment == 0 ? view : nil
 
         switch modeSegmentedControl.selectedSegment {
@@ -77,28 +77,28 @@ class ViewController: NSViewController {
         }
     }
 
-    private var hudStyle: ProgressHUDStyle {
+    private func applyUserSelectedHUDStyle() {
         switch styleSegmentedControl.selectedSegment {
-        case 0: return .light
-        case 1: return .dark
-        default: return .custom(foreground: .yellow, backgroud: .red)
+        case 0: return ProgressHUD.setDefaultStyle(.light)
+        case 1: return ProgressHUD.setDefaultStyle(.dark)
+        default: return ProgressHUD.setDefaultStyle(.custom(foreground: .yellow, backgroud: .red))
         }
     }
 
-    private var hudMaskType: ProgressHUDMaskType {
+    private func applyUserSelectedHUDMaskType() {
         switch maskSegmentedControl.selectedSegment {
-        case 0: return .none
-        case 1: return .clear
-        case 2: return .black
-        default: return .custom(color: NSColor.green.withAlphaComponent(0.6))
+        case 0: return ProgressHUD.setDefaultMaskType(.none)
+        case 1: return ProgressHUD.setDefaultMaskType(.clear)
+        case 2: return ProgressHUD.setDefaultMaskType(.black)
+        default: return ProgressHUD.setDefaultMaskType(.custom(color: NSColor.green.withAlphaComponent(0.6)))
         }
     }
 
-    private var hudPosition: ProgressHUDPosition {
+    private func applyUserSelectedHUDPosition() {
         switch positionSegmentedControl.selectedSegment {
-        case 0: return .top
-        case 1: return .center
-        default: return .bottom
+        case 0: return ProgressHUD.setDefaultPosition(.top)
+        case 1: return ProgressHUD.setDefaultPosition(.center)
+        default: return ProgressHUD.setDefaultPosition(.bottom)
         }
     }
 
