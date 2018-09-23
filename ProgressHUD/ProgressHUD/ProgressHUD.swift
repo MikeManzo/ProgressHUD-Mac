@@ -8,16 +8,6 @@
 
 import AppKit
 
-/// ProgressHUD operation mode
-enum ProgressHUDMode {
-    case indeterminate // Progress is shown using an Spinning Progress Indicator. This is the default.
-    case determinate // Progress is shown using a round, pie-chart like, progress view.
-    case error // Shows an error icon and the text labels.
-    case success // Shows a success icon and the text labels.
-    case text // Shows only the text labels labels.
-    case custom(view: NSView) // Shows a custom view and the text labels.
-}
-
 /// The `ProgressHUD` color scheme
 enum ProgressHUDStyle {
     /// `ProgressHUDStyle` with light background with *dark* text and progress indicator
@@ -45,7 +35,7 @@ enum ProgressHUDStyle {
 
 }
 
-/// Mask type for the view around of the ProgressHUD
+/// Mask type for the view around of the `ProgressHUD`
 enum ProgressHUDMaskType {
     /// Clear background `ProgressHUDMaskType` while allowing user interactions when HUD is displayed
     case none
@@ -57,7 +47,7 @@ enum ProgressHUDMaskType {
     case custom(color: NSColor)
 }
 
-/// ProgressHUD position inside the view
+/// `ProgressHUD` position inside the view
 enum ProgressHUDPosition {
     /// Positions the `ProgressHUD` in the top third of the view
     case top
@@ -65,6 +55,16 @@ enum ProgressHUDPosition {
     case center
     /// Positions the `ProgressHUD` in the lower third of the view
     case bottom
+}
+
+// ProgressHUD operation mode
+private enum ProgressHUDMode {
+    case indeterminate // Progress is shown using an Spinning Progress Indicator and the status message
+    case determinate // Progress is shown using a round, pie-chart like, progress view and the status message
+    case info // Shows an info glyph and the status message
+    case success // Shows a success glyph and the status message
+    case error // Shows an error glyph and the status message
+    case custom(view: NSView) // Shows a custom view and the status message
 }
 
 typealias ProgressHUDDismissCompletion = () -> Void
@@ -79,6 +79,7 @@ class ProgressHUD: NSView {
         super.init(frame: frameRect)
         autoresizingMask = [.maxXMargin, .minXMargin, .maxYMargin, .minYMargin]
         alphaValue = 0.0
+        isHidden = true
 
         statusLabel.font = font
         statusLabel.isEditable = false
@@ -99,8 +100,6 @@ class ProgressHUD: NSView {
     }
 
     // MARK: - Customization
-
-    var mode: ProgressHUDMode = .indeterminate
 
     /// Set the `ProgressHUDStyle` color scheme (Default is .light)
     class func setDefaultStyle(_ style: ProgressHUDStyle) { ProgressHUD.shared.style = style }
@@ -150,53 +149,85 @@ class ProgressHUD: NSView {
     class func setSquare(_ square: Bool) { ProgressHUD.shared.square = square }
     private var square = false
 
-    // MARK: - Show Methods
+    // MARK: - Presentation Methods
 
+    /// Presents an indeterminate `ProgressHUD` with no status message
+    class func show() {
+        ProgressHUD.show(withStatus: "")
+    }
+
+    /// Presents an indeterminate `ProgressHUD` with a status message
     class func show(withStatus status: String) {
-        guard let view = ProgressHUD.shared.hudView else { return }
-        ProgressHUD.shared.frame = view.frame
-        ProgressHUD.shared.progressIndicator = ProgressIndicatorLayer(size: ProgressHUD.shared.spinnerSize, color: ProgressHUD.shared.style.foregroundColor)
-        ProgressHUD.shared.statusLabel.textColor = ProgressHUD.shared.style.foregroundColor
-        ProgressHUD.shared.statusLabel.font = ProgressHUD.shared.font
-        ProgressHUD.shared.statusLabel.string = status
-        ProgressHUD.shared.statusLabel.sizeToFit()
-        ProgressHUD.shared.updateIndicators()
-        view.addSubview(ProgressHUD.shared)
-        ProgressHUD.shared.show(true)
+        ProgressHUD.shared.show(withStatus: status, mode: .indeterminate)
     }
 
+    /// Presents a determinate (or updates already visible) `ProgressHUD` with a progress value
     class func show(progress: Double) {
-        
+        ProgressHUD.show(progress: progress, status: "")
     }
 
+    /// Presents a determinate (or updates already visible) `ProgressHUD` with a progress value and status message
     class func show(progress: Double, status: String) {
-        DispatchQueue.main.async {
-            ProgressHUD.shared.progress = progress
-            ProgressHUD.shared.statusLabel.string = status
-            ProgressHUD.shared.statusLabel.sizeToFit()
-        }
+        ProgressHUD.shared.show(progress: progress, status: status)
     }
 
+    /// Changes the `ProgressHUD` status message while it's showing
+    class func setStatus(_ status: String) {
+        if ProgressHUD.shared.isHidden {
+            return
+        }
+        ProgressHUD.shared.setStatus(status)
+    }
+
+    /// Presents a HUD with an info glyph + status, and dismisses the HUD a little bit later
+    class func showInfoWithStatus(_ status: String) {
+        ProgressHUD.shared.show(withStatus: status, mode: .info)
+        ProgressHUD.dismiss(delay: ProgressHUD.shared.displayDuration(for: status))
+    }
+
+    /// Presents a HUD with a success glyph + status, and dismisses the HUD a little bit later
+    class func showSuccessWithStatus(_ status: String) {
+        ProgressHUD.shared.show(withStatus: status, mode: .success)
+        ProgressHUD.dismiss(delay: ProgressHUD.shared.displayDuration(for: status))
+    }
+
+    /// Presents a HUD with an error glyph + status, and dismisses the HUD a little bit later
+    class func showErrorWithStatus(_ status: String) {
+        ProgressHUD.shared.show(withStatus: status, mode: .error)
+        ProgressHUD.dismiss(delay: ProgressHUD.shared.displayDuration(for: status))
+    }
+
+    /// Presents a HUD with an image + status, and dismisses the HUD a little bit later
+    class func showImage(_ image: NSImage, status: String) {
+        let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
+        imageView.image = image
+        ProgressHUD.shared.show(withStatus: status, mode: .custom(view: imageView))
+        ProgressHUD.dismiss(delay: ProgressHUD.shared.displayDuration(for: status))
+    }
+
+    /// Dismisses the currently visible `ProgressHUD` if visible
     class func dismiss() {
         ProgressHUD.shared.hide(true)
     }
 
+    /// Dismisses the currently visible `ProgressHUD` if visible and calls the completion closure
     class func dismiss(completion: ProgressHUDDismissCompletion?) {
         ProgressHUD.shared.hide(true)
     }
 
+    /// Dismisses the currently visible `ProgressHUD` if visible, after a time interval
     class func dismiss(delay: TimeInterval) {
-        DispatchQueue.main.async {
-            ProgressHUD.shared.perform(#selector(hideDelayed(_:)), with: 1, afterDelay: delay)
-        }
+        ProgressHUD.shared.perform(#selector(hideDelayed(_:)), with: 1, afterDelay: delay)
     }
 
+    /// Dismisses the currently visible `ProgressHUD` if visible, after a time interval and calls the completion closure
     class func dismiss(delay: TimeInterval, completion: ProgressHUDDismissCompletion?) {
         ProgressHUD.shared.perform(#selector(hideDelayed(_:)), with: 1, afterDelay: delay)
     }
 
     // MARK: - Private Properties
 
+    private var mode: ProgressHUDMode = .indeterminate
     private var indicator: NSView?
     private var progressIndicator: ProgressIndicatorLayer!
     private var size: CGSize = .zero
@@ -224,19 +255,31 @@ class ProgressHUD: NSView {
         windowController?.showWindow(self)
         return windowController?.window?.contentView
     }
-
+    private let minimumDismissTimeInterval: TimeInterval = 5
+    private let maximumDismissTimeInterval: TimeInterval = 10
     private var windowController: NSWindowController?
 
     // MARK: - Private Show & Hide methods
 
-    private func show(_ animated: Bool) {
+    private func show(withStatus status: String, mode: ProgressHUDMode) {
+        guard let view = hudView else { return }
+        self.mode = mode
+        if isHidden {
+            frame = view.frame
+            progressIndicator = ProgressIndicatorLayer(size: ProgressHUD.shared.spinnerSize, color: ProgressHUD.shared.style.foregroundColor)
+            view.addSubview(self)
+        }
+        updateIndicators()
+        setStatus(status)
+        show(true)
+    }
 
+    private func show(_ animated: Bool) {
         useAnimation = animated
         needsDisplay = true
-
-        // Fade in
         isHidden = false
         if animated {
+            // Fade in
             NSAnimationContext.beginGrouping()
             NSAnimationContext.current.duration = 0.20
             animator().alphaValue = 1.0
@@ -249,9 +292,8 @@ class ProgressHUD: NSView {
     private func hide(_ animated: Bool) {
         useAnimation = animated
         NSObject.cancelPreviousPerformRequests(withTarget: self)
-
-        // Fade out
         if animated {
+            // Fade out
             NSAnimationContext.beginGrouping()
             NSAnimationContext.current.duration = 0.20
             NSAnimationContext.current.completionHandler = {
@@ -265,6 +307,11 @@ class ProgressHUD: NSView {
         }
     }
 
+    private func show(progress: Double, status: String) {
+        show(withStatus: status, mode: .determinate)
+        self.progress = progress
+    }
+
     private func done() {
         progressIndicator.stopProgressAnimation()
         alphaValue = 0.0
@@ -273,6 +320,13 @@ class ProgressHUD: NSView {
         completionHandler?()
         indicator = nil
         windowController?.close()
+    }
+
+    private func setStatus(_ status: String) {
+        statusLabel.textColor = style.foregroundColor
+        statusLabel.font = font
+        statusLabel.string = status
+        statusLabel.sizeToFit()
     }
 
     override func mouseDown(with theEvent: NSEvent) {
@@ -298,13 +352,11 @@ class ProgressHUD: NSView {
             indicator = view
             addSubview(indicator!)
 
-        case .determinate, .text, .success, .error:
-
+        case .determinate, .info, .success, .error:
             indicator?.removeFromSuperview()
             indicator = nil
 
         case let .custom(view):
-
             indicator?.removeFromSuperview()
             indicator = view
             addSubview(indicator!)
@@ -327,6 +379,11 @@ class ProgressHUD: NSView {
         done()
     }
 
+    private func displayDuration(for string: String) -> TimeInterval {
+        let minimum = max(TimeInterval(string.count) * 0.06 + 0.5, minimumDismissTimeInterval)
+        return min(minimum, maximumDismissTimeInterval)
+    }
+
     // MARK: - Layout
 
     func layoutSubviews() {
@@ -339,7 +396,7 @@ class ProgressHUD: NSView {
         var totalSize = CGSize.zero
         var indicatorF = indicator?.bounds ?? .zero
         switch mode {
-        case .determinate, .success, .error: indicatorF.size.height = spinnerSize
+        case .determinate, .info, .success, .error: indicatorF.size.height = spinnerSize
         default: break
         }
         indicatorF.size.width = min(indicatorF.size.width, maxWidth)
@@ -465,11 +522,11 @@ class ProgressHUD: NSView {
             context.setFillColor(style.foregroundColor.cgColor)
             processPath.stroke()
 
-        case .error:
-            drawErrorSymbol(frame: NSRect(x: center.x - spinnerSize / 2, y: center.y - spinnerSize / 2, width: spinnerSize, height: spinnerSize))
-
         case .success:
             drawSuccessSymbol(frame: NSRect(x: center.x - spinnerSize / 2, y: center.y - spinnerSize / 2, width: spinnerSize, height: spinnerSize))
+
+        case .error:
+            drawErrorSymbol(frame: NSRect(x: center.x - spinnerSize / 2, y: center.y - spinnerSize / 2, width: spinnerSize, height: spinnerSize))
 
         default:
             break
