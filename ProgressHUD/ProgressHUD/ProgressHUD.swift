@@ -61,7 +61,10 @@ typealias ProgressHUDDismissCompletion = () -> Void
 
 class ProgressHUD: NSView {
 
+    // MARK: - Lifecycle
+
     static let shared = ProgressHUD()
+
     private override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         autoresizingMask = [.maxXMargin, .minXMargin, .maxYMargin, .minYMargin]
@@ -69,13 +72,13 @@ class ProgressHUD: NSView {
         layer?.backgroundColor = .clear
         alphaValue = 0.0
 
-        messageLabel.font = messageFont
-        messageLabel.isEditable = false
-        messageLabel.isSelectable = false
-        messageLabel.alignment = .center
-        messageLabel.layer?.isOpaque = false
-        messageLabel.backgroundColor = .clear
-        addSubview(messageLabel)
+        statusLabel.font = messageFont
+        statusLabel.isEditable = false
+        statusLabel.isSelectable = false
+        statusLabel.alignment = .center
+        statusLabel.layer?.isOpaque = false
+        statusLabel.backgroundColor = .clear
+        addSubview(statusLabel)
 
         let screen = NSScreen.screens[0]
         let window = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: true, screen: screen)
@@ -84,6 +87,10 @@ class ProgressHUD: NSView {
         window.contentView?.layer?.backgroundColor = .clear
         window.backgroundColor = .clear
 
+    }
+
+    required init?(coder decoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     // MARK: - Customization
@@ -108,10 +115,10 @@ class ProgressHUD: NSView {
         guard let view = ProgressHUD.shared.hudView else { return }
         ProgressHUD.shared.frame = view.frame
         ProgressHUD.shared.progressIndicator = ProgressIndicatorLayer(size: ProgressHUD.shared.spinnerSize, color: ProgressHUD.shared.style.foregroundColor)
-        ProgressHUD.shared.messageLabel.textColor = ProgressHUD.shared.style.foregroundColor
-        ProgressHUD.shared.messageLabel.font = ProgressHUD.shared.messageFont
-        ProgressHUD.shared.messageLabel.string = status
-        ProgressHUD.shared.messageLabel.sizeToFit()
+        ProgressHUD.shared.statusLabel.textColor = ProgressHUD.shared.style.foregroundColor
+        ProgressHUD.shared.statusLabel.font = ProgressHUD.shared.messageFont
+        ProgressHUD.shared.statusLabel.string = status
+        ProgressHUD.shared.statusLabel.sizeToFit()
         ProgressHUD.shared.updateIndicators()
         view.addSubview(ProgressHUD.shared)
         ProgressHUD.shared.show(true)
@@ -122,8 +129,8 @@ class ProgressHUD: NSView {
     class func show(progress: Double, status: String) {
         DispatchQueue.main.async {
             ProgressHUD.shared.progress = progress
-            ProgressHUD.shared.messageLabel.string = status
-            ProgressHUD.shared.messageLabel.sizeToFit()
+            ProgressHUD.shared.statusLabel.string = status
+            ProgressHUD.shared.statusLabel.sizeToFit()
         }
     }
 
@@ -145,23 +152,20 @@ class ProgressHUD: NSView {
         ProgressHUD.shared.perform(#selector(hideDelayed(_:)), with: 1, afterDelay: delay)
     }
 
-    /// The progress of the progress indicator, from 0.0 to 1.0
-    var progress: Double = 0.0 {
-        didSet {
-            needsLayout = true
-            needsDisplay = true
-        }
-    }
-
     // MARK: - Private Properties
 
     private var indicator: NSView?
     private var progressIndicator: ProgressIndicatorLayer!
     private var size: CGSize = .zero
     private var useAnimation = true
-    private let messageLabel = NSText(frame: .zero)
+    private let statusLabel = NSText(frame: .zero)
     private var completionHandler: ProgressHUDDismissCompletion? // Called after the HUD is completely hidden
-
+    private var progress: Double = 0.0 {
+        didSet {
+            needsLayout = true
+            needsDisplay = true
+        }
+    }
     private var yOffset: CGFloat {
         switch position {
         case .top: return -bounds.size.height / 5
@@ -169,7 +173,6 @@ class ProgressHUD: NSView {
         case .bottom: return bounds.size.height / 5
         }
     }
-
     private var hudView: NSView? {
         if let view = containerView {
             windowController?.close()
@@ -181,60 +184,29 @@ class ProgressHUD: NSView {
 
     private var windowController: NSWindowController?
 
-    private
-
-    // MARK: - Lifecycle
-
-    // A convenience constructor that initializes the HUD with the view's bounds.
-    convenience init(view: NSView,
-                     mode: ProgressHUDMode,
-                     style: ProgressHUDStyle,
-                     maskType: ProgressHUDMaskType,
-                     position: ProgressHUDPosition,
-                     completion: ProgressHUDDismissCompletion?) {
-        var bounds = view.frame
-        bounds.origin.x = 0.0
-        bounds.origin.y = 0.0
-        self.init(frame: bounds)
-        self.mode = mode
-        self.style = style
-        self.maskType = maskType
-        self.position = position
-        completionHandler = completion
-        progressIndicator = ProgressIndicatorLayer(size: spinnerSize, color: style.foregroundColor)
-        updateIndicators()
-    }
-
-    required init?(coder decoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    // MARK: - Class methods
-
-    // Finds the top-most HUD subview and returns it.
-    class func hud(in view: NSView) -> ProgressHUD? {
-        for subview in view.subviews where subview is ProgressHUD {
-            return subview as? ProgressHUD
-        }
-        return nil
-    }
-
-    // MARK: - Show & Hide
+    // MARK: - Private Show & Hide methods
 
     private func show(_ animated: Bool) {
+
         useAnimation = animated
         needsDisplay = true
-        show(usingAnimation: useAnimation)
+
+        // Fade in
+        isHidden = false
+        if animated {
+            NSAnimationContext.beginGrouping()
+            NSAnimationContext.current.duration = 0.20
+            animator().alphaValue = 1.0
+            NSAnimationContext.endGrouping()
+        } else {
+            alphaValue = 1.0
+        }
     }
 
     private func hide(_ animated: Bool) {
         useAnimation = animated
         NSObject.cancelPreviousPerformRequests(withTarget: self)
-        hide(usingAnimation: useAnimation)
-    }
 
-    private func hide(usingAnimation animated: Bool) {
-        NSObject.cancelPreviousPerformRequests(withTarget: self)
         // Fade out
         if animated {
             NSAnimationContext.beginGrouping()
@@ -247,19 +219,6 @@ class ProgressHUD: NSView {
         } else {
             alphaValue = 0.0
             done()
-        }
-    }
-
-    private func show(usingAnimation animated: Bool) {
-        // Fade in
-        isHidden = false
-        if animated {
-            NSAnimationContext.beginGrouping()
-            NSAnimationContext.current.duration = 0.20
-            animator().alphaValue = 1.0
-            NSAnimationContext.endGrouping()
-        } else {
-            alphaValue = 1.0
         }
     }
 
@@ -347,17 +306,7 @@ class ProgressHUD: NSView {
             totalSize.height += padding
         }
 
-//        var labelSize: CGSize = titleLabel.string.count > 0 ? titleLabel.string.size(withAttributes: [NSAttributedString.Key.font: titleLabel.font!]) : CGSize.zero
-//        if labelSize.width > 0.0 {
-//            labelSize.width += 10.0
-//        }
-//        labelSize.width = min(labelSize.width, maxWidth)
-//        totalSize.width = max(totalSize.width, labelSize.width)
-//        totalSize.height += labelSize.height
-//        if labelSize.height > 0.0 && indicatorF.size.height > 0.0 {
-//            totalSize.height += padding
-//        }
-        var detailsLabelSize: CGSize = messageLabel.string.count > 0 ? messageLabel.string.size(withAttributes: [NSAttributedString.Key.font: messageLabel.font!]) : CGSize.zero
+        var detailsLabelSize: CGSize = statusLabel.string.count > 0 ? statusLabel.string.size(withAttributes: [NSAttributedString.Key.font: statusLabel.font!]) : CGSize.zero
         if detailsLabelSize.width > 0.0 {
             detailsLabelSize.width += 10.0
         }
@@ -397,7 +346,7 @@ class ProgressHUD: NSView {
         detailsLabelF.origin.y = yPos
         detailsLabelF.origin.x = round((bounds.size.width - detailsLabelSize.width) / 2) + xPos
         detailsLabelF.size = detailsLabelSize
-        messageLabel.frame = detailsLabelF
+        statusLabel.frame = detailsLabelF
 
         // Enforce square rules
         if square {
@@ -556,14 +505,6 @@ private class ProgressIndicatorLayer: CALayer {
     deinit {
         stopProgressAnimation()
         removeFinLayers()
-    }
-
-    func toggleProgressAnimation() {
-        if isRunning {
-            stopProgressAnimation()
-        } else {
-            startProgressAnimation()
-        }
     }
 
     func startProgressAnimation() {
