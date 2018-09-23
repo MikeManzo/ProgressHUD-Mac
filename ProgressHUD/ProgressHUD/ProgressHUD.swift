@@ -78,23 +78,18 @@ class ProgressHUD: NSView {
     private override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         autoresizingMask = [.maxXMargin, .minXMargin, .maxYMargin, .minYMargin]
-        layer?.isOpaque = false
-        layer?.backgroundColor = .clear
         alphaValue = 0.0
 
         statusLabel.font = font
         statusLabel.isEditable = false
         statusLabel.isSelectable = false
         statusLabel.alignment = .center
-        statusLabel.layer?.isOpaque = false
         statusLabel.backgroundColor = .clear
         addSubview(statusLabel)
 
         let screen = NSScreen.screens[0]
         let window = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: true, screen: screen)
         windowController = NSWindowController(window: window)
-        window.contentView?.wantsLayer = true
-        window.contentView?.layer?.backgroundColor = .clear
         window.backgroundColor = .clear
 
     }
@@ -127,13 +122,33 @@ class ProgressHUD: NSView {
     class func setFont(_ font: NSFont) { ProgressHUD.shared.font = font }
     private var font = NSFont.systemFont(ofSize: 18)
 
-    var opacity: CGFloat = 0.9 // The opacity of the HUD window.
-    var spinnerSize: CGFloat = 60.0 // The size both horizontally and vertically of the spinner
-    var margin: CGFloat = 20.0 // The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views)
-    var padding: CGFloat = 4.0 // The amount of space between the HUD elements (labels, indicators or custom views)
-    var cornerRadius: CGFloat = 10.0 // The corner radius for th HUD
-    var dismissible = true // Allow User to dismiss HUD manually by a tap event
-    var square = false // Force the HUD dimensions to be equal if possible.
+    /// The opacity of the HUD view (Default is 0.9)
+    class func setOpacity(_ opacity: CGFloat) { ProgressHUD.shared.opacity = opacity }
+    private var opacity: CGFloat = 0.9
+
+    /// The size both horizontally and vertically of the progress spinner (Default is 60 points)
+    class func setSpinnerSize(_ size: CGFloat) { ProgressHUD.shared.spinnerSize = size }
+    private var spinnerSize: CGFloat = 60.0
+
+    /// The amount of space between the HUD edge and the HUD elements (label, indicator or custom view)
+    class func setMargin(_ margin: CGFloat) { ProgressHUD.shared.margin = margin }
+    private var margin: CGFloat = 20.0
+
+    /// The amount of space between the HUD elements (label, indicator or custom view)
+    class func setPadding(_ padding: CGFloat) { ProgressHUD.shared.padding = padding }
+    private var padding: CGFloat = 4.0
+
+    /// The corner radius for th HUD
+    class func setCornerRadius(_ radius: CGFloat) { ProgressHUD.shared.cornerRadius = radius }
+    private var cornerRadius: CGFloat = 10.0
+
+    /// Allow User to dismiss HUD manually by a tap event
+    class func setDismissable(_ dismissable: Bool) { ProgressHUD.shared.dismissible = dismissable }
+    private var dismissible = true
+
+    /// Force the HUD dimensions to be equal if possible
+    class func setSquare(_ square: Bool) { ProgressHUD.shared.square = square }
+    private var square = false
 
     // MARK: - Show Methods
 
@@ -150,7 +165,9 @@ class ProgressHUD: NSView {
         ProgressHUD.shared.show(true)
     }
 
-    class func show(progress: Double) {}
+    class func show(progress: Double) {
+        
+    }
 
     class func show(progress: Double, status: String) {
         DispatchQueue.main.async {
@@ -185,7 +202,7 @@ class ProgressHUD: NSView {
     private var size: CGSize = .zero
     private var useAnimation = true
     private let statusLabel = NSText(frame: .zero)
-    private var completionHandler: ProgressHUDDismissCompletion? // Called after the HUD is completely hidden
+    private var completionHandler: ProgressHUDDismissCompletion?
     private var progress: Double = 0.0 {
         didSet {
             needsLayout = true
