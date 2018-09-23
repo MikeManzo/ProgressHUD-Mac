@@ -25,15 +25,27 @@ class ViewController: NSViewController {
         switch modeSegmentedControl.selectedSegment {
 
         case 0: // Indeterminate
-            view.showProgressHUD(title: "Doing Stuff",
-                                 message: "Completing something…",
-                                 mode: .indeterminate,
-                                 style: hudStyle,
-                                 maskType: hudMaskType,
-                                 position: hudPosition,
-                                 duration: 2) {
-                print("Finished showing indeterminate HUD")
-            }
+
+            ProgressHUD.show(withStatus: "Test Progress HUD")
+//            let screen = NSScreen.screens[0]
+//            let window = NSWindow(contentRect: screen.frame, styleMask: .fullScreen, backing: .buffered, defer: true, screen: screen)
+//            let windowController = NSWindowController(window: window)
+//            window.collectionBehavior = .fullScreenAuxiliary
+//            windowController.showWindow(self)
+//            window.toggleFullScreen(true)
+//            window.contentView?.wantsLayer = true
+//            window.contentView?.layer?.backgroundColor = .clear
+//            window.backgroundColor = .clear
+//            window.contentView?.showProgressHUD(title: "Doing Stuff",
+//                                                message: "Completing something…",
+//                                                mode: .indeterminate,
+//                                                style: hudStyle,
+//                                                maskType: hudMaskType,
+//                                                position: hudPosition,
+//                                                duration: 2) {
+//                print("Finished showing indeterminate HUD")
+//                windowController.close()
+//            }
 
         case 1: // Determinate
             view.showProgressHUD(title: "Determinate Progress",
