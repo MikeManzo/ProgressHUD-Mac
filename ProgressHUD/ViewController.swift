@@ -27,7 +27,7 @@ class ViewController: NSViewController {
         applyUserSelectedHUDStyle()
         applyUserSelectedHUDMaskType()
         applyUserSelectedHUDPosition()
-        ProgressHUD.shared.containerView = locationSegmentedControl.selectedSegment == 0 ? view : nil
+        ProgressHUD.setContainerView(locationSegmentedControl.selectedSegment == 0 ? view : nil)
 
         switch modeSegmentedControl.selectedSegment {
 

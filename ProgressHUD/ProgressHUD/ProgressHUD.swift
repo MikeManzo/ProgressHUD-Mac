@@ -8,7 +8,7 @@
 
 import AppKit
 
-// ProgressHUD operation mode
+/// ProgressHUD operation mode
 enum ProgressHUDMode {
     case indeterminate // Progress is shown using an Spinning Progress Indicator. This is the default.
     case determinate // Progress is shown using a round, pie-chart like, progress view.
@@ -18,13 +18,16 @@ enum ProgressHUDMode {
     case custom(view: NSView) // Shows a custom view and the text labels.
 }
 
-// ProgressHUD theme
+/// The `ProgressHUD` color scheme
 enum ProgressHUDStyle {
-    case light // light HUD background with dark text and progress indicator
-    case dark // dark HUD background with light text and progress indicator
-    case custom(foreground: NSColor, backgroud: NSColor) // custom style
+    /// `ProgressHUDStyle` with light background with *dark* text and progress indicator
+    case light
+    /// `ProgressHUDStyle` with dark background with *light* text and progress indicator
+    case dark
+    /// `ProgressHUDStyle` with custom foreground and background colors
+    case custom(foreground: NSColor, backgroud: NSColor)
 
-    var backgroundColor: NSColor {
+    fileprivate var backgroundColor: NSColor {
         switch self {
         case .light: return .white
         case .dark: return .black
@@ -32,7 +35,7 @@ enum ProgressHUDStyle {
         }
     }
 
-    var foregroundColor: NSColor {
+    fileprivate var foregroundColor: NSColor {
         switch self {
         case .light: return .black
         case .dark: return .init(white: 0.95, alpha: 1)
@@ -42,18 +45,25 @@ enum ProgressHUDStyle {
 
 }
 
-// ProgressHUD mask for the view around of the HUD
+/// Mask type for the view around of the ProgressHUD
 enum ProgressHUDMaskType {
-    case none // default mask type, allow user interactions while HUD is displayed
-    case clear // don't allow user interactions with background objects
-    case black // don't allow user interactions with background objects and dim the UI in the back of the HUD
-    case custom(color: NSColor) // don't allow user interactions with background objects and dim the UI in the back of the HUD with a custom color
+    /// Clear background `ProgressHUDMaskType` while allowing user interactions when HUD is displayed
+    case none
+    /// Clear background `ProgressHUDMaskType` while preventing user interactions when HUD is displayed
+    case clear
+    /// Translucent black background `ProgressHUDMaskType` while preventing user interactions when HUD is displayed
+    case black
+    /// Custom color background `ProgressHUDMaskType` while preventing user interactions when HUD is displayed
+    case custom(color: NSColor)
 }
 
-// ProgressHUD position inside the view
+/// ProgressHUD position inside the view
 enum ProgressHUDPosition {
+    /// Positions the `ProgressHUD` in the top third of the view
     case top
+    /// Positions the `ProgressHUD` in the center of the view
     case center
+    /// Positions the `ProgressHUD` in the lower third of the view
     case bottom
 }
 
@@ -72,7 +82,7 @@ class ProgressHUD: NSView {
         layer?.backgroundColor = .clear
         alphaValue = 0.0
 
-        statusLabel.font = messageFont
+        statusLabel.font = font
         statusLabel.isEditable = false
         statusLabel.isSelectable = false
         statusLabel.alignment = .center
@@ -96,14 +106,27 @@ class ProgressHUD: NSView {
     // MARK: - Customization
 
     var mode: ProgressHUDMode = .indeterminate
-    private var style: ProgressHUDStyle = .light
+
+    /// Set the `ProgressHUDStyle` color scheme (Default is .light)
     class func setDefaultStyle(_ style: ProgressHUDStyle) { ProgressHUD.shared.style = style }
-    private var maskType: ProgressHUDMaskType = .clear
+    private var style: ProgressHUDStyle = .light
+
+    /// Set the `ProgressHUDMaskType` (Default is .clear)
     class func setDefaultMaskType(_ maskType: ProgressHUDMaskType) { ProgressHUD.shared.maskType = maskType }
-    private var position: ProgressHUDPosition = .bottom
+    private var maskType: ProgressHUDMaskType = .clear
+
+    /// Set the `ProgressHUDPosition` position in the view (Default is .bottom)
     class func setDefaultPosition(_ position: ProgressHUDPosition) { ProgressHUD.shared.position = position }
-    var containerView: NSView? // if nil then use default window level
-    var messageFont = NSFont.systemFont(ofSize: 18)
+    private var position: ProgressHUDPosition = .bottom
+
+    /// Set the container view in which to display the `ProgressHUD`. If nil then the main screen will be used.
+    class func setContainerView(_ view: NSView?) { ProgressHUD.shared.containerView = view }
+    private var containerView: NSView?
+
+    /// Set the font to use to display the HUD status message (Default is systemFontOfSize: 18)
+    class func setFont(_ font: NSFont) { ProgressHUD.shared.font = font }
+    private var font = NSFont.systemFont(ofSize: 18)
+
     var opacity: CGFloat = 0.9 // The opacity of the HUD window.
     var spinnerSize: CGFloat = 60.0 // The size both horizontally and vertically of the spinner
     var margin: CGFloat = 20.0 // The amount of space between the HUD edge and the HUD elements (labels, indicators or custom views)
@@ -119,7 +142,7 @@ class ProgressHUD: NSView {
         ProgressHUD.shared.frame = view.frame
         ProgressHUD.shared.progressIndicator = ProgressIndicatorLayer(size: ProgressHUD.shared.spinnerSize, color: ProgressHUD.shared.style.foregroundColor)
         ProgressHUD.shared.statusLabel.textColor = ProgressHUD.shared.style.foregroundColor
-        ProgressHUD.shared.statusLabel.font = ProgressHUD.shared.messageFont
+        ProgressHUD.shared.statusLabel.font = ProgressHUD.shared.font
         ProgressHUD.shared.statusLabel.string = status
         ProgressHUD.shared.statusLabel.sizeToFit()
         ProgressHUD.shared.updateIndicators()
