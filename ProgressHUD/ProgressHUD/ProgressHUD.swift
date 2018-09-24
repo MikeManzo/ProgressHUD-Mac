@@ -151,10 +151,6 @@ class ProgressHUD: NSView {
     class func setDismissable(_ dismissable: Bool) { ProgressHUD.shared.dismissible = dismissable }
     private var dismissible = false
 
-    /// Force the HUD dimensions to be equal if possible
-    class func setSquare(_ square: Bool) { ProgressHUD.shared.square = square }
-    private var square = false
-
     // MARK: - Presentation
 
     /// Presents an indeterminate `ProgressHUD` with no status message
@@ -456,16 +452,6 @@ class ProgressHUD: NSView {
         statusLabelFrame.size = statusLabelSize
         statusLabel.frame = statusLabelFrame
 
-        // Enforce square rules
-        if square {
-            let maximum = max(totalSize.width, totalSize.height)
-            if maximum <= bounds.size.width - margin * 2 {
-                totalSize.width = maximum
-            }
-            if maximum <= bounds.size.height - margin * 2 {
-                totalSize.height = maximum
-            }
-        }
         size = totalSize
     }
 

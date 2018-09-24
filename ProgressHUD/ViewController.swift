@@ -15,6 +15,7 @@ class ViewController: NSViewController {
     @IBOutlet private var styleSegmentedControl: NSSegmentedControl!
     @IBOutlet private var maskSegmentedControl: NSSegmentedControl!
     @IBOutlet private var positionSegmentedControl: NSSegmentedControl!
+    @IBOutlet private var dismissableCheckBox: NSButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +29,7 @@ class ViewController: NSViewController {
         applyUserSelectedHUDMaskType()
         applyUserSelectedHUDPosition()
         ProgressHUD.setContainerView(locationSegmentedControl.selectedSegment == 0 ? view : nil)
+        ProgressHUD.setDismissable(dismissableCheckBox.state == .on)
 
         switch modeSegmentedControl.selectedSegment {
 
