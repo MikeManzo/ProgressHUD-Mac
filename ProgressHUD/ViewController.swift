@@ -52,7 +52,7 @@ class ViewController: NSViewController {
             }
 
         case 2: // info
-            ProgressHUD.showInfoWithStatus("Showing text only.\nOn multiple lines.\nSquashed much?")
+            ProgressHUD.showInfoWithStatus("Sunny with chance of rain today")
 
         case 3: // Success
             ProgressHUD.showSuccessWithStatus("Everything worked out in the end")
@@ -60,7 +60,10 @@ class ViewController: NSViewController {
         case 4: // Error
             ProgressHUD.showErrorWithStatus("Something bad happened!")
 
-        case 5: // Image
+        case 5: // Text
+            ProgressHUD.showTextWithStatus("Showing text only.\nEven on multiple lines.\nLooking good today!")
+
+        case 6: // Image
             ProgressHUD.showImage(NSImage(named: "unicorn")!, status: "I'm not a horse")
 
         default:

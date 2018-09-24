@@ -64,6 +64,7 @@ private enum ProgressHUDMode {
     case info // Shows an info glyph and the status message
     case success // Shows a success glyph and the status message
     case error // Shows an error glyph and the status message
+    case text // Shows only the status message
     case custom(view: NSView) // Shows a custom view and the status message
 }
 
@@ -197,6 +198,12 @@ class ProgressHUD: NSView {
         ProgressHUD.dismiss(delay: ProgressHUD.shared.displayDuration(for: status))
     }
 
+    /// Presents a HUD with the status message only, and dismisses the HUD a little bit later
+    class func showTextWithStatus(_ status: String) {
+        ProgressHUD.shared.show(withStatus: status, mode: .text)
+        ProgressHUD.dismiss(delay: ProgressHUD.shared.displayDuration(for: status))
+    }
+
     /// Presents a HUD with an image + status, and dismisses the HUD a little bit later
     class func showImage(_ image: NSImage, status: String) {
         let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: image.size.width, height: image.size.height))
@@ -255,8 +262,8 @@ class ProgressHUD: NSView {
         windowController?.showWindow(self)
         return windowController?.window?.contentView
     }
-    private let minimumDismissTimeInterval: TimeInterval = 5
-    private let maximumDismissTimeInterval: TimeInterval = 10
+    private let minimumDismissTimeInterval: TimeInterval = 2
+    private let maximumDismissTimeInterval: TimeInterval = 5
     private var windowController: NSWindowController?
 
     // MARK: - Private Show & Hide methods
@@ -354,7 +361,7 @@ class ProgressHUD: NSView {
             indicator = view
             addSubview(indicator!)
 
-        case .determinate, .info, .success, .error:
+        case .determinate, .info, .success, .error, .text:
             indicator?.removeFromSuperview()
             indicator = nil
 
@@ -396,26 +403,26 @@ class ProgressHUD: NSView {
         // Determine the total width and height needed
         let maxWidth = bounds.size.width - margin * 4
         var totalSize = CGSize.zero
-        var indicatorF = indicator?.bounds ?? .zero
+        var indicatorFrame = indicator?.bounds ?? .zero
         switch mode {
-        case .determinate, .info, .success, .error: indicatorF.size.height = spinnerSize
+        case .determinate, .info, .success, .error: indicatorFrame.size.height = spinnerSize
         default: break
         }
-        indicatorF.size.width = min(indicatorF.size.width, maxWidth)
-        totalSize.width = max(totalSize.width, indicatorF.size.width)
-        totalSize.height += indicatorF.size.height
-        if indicatorF.size.height > 0.0 {
+        indicatorFrame.size.width = min(indicatorFrame.size.width, maxWidth)
+        totalSize.width = max(totalSize.width, indicatorFrame.size.width)
+        totalSize.height += indicatorFrame.size.height
+        if indicatorFrame.size.height > 0.0 {
             totalSize.height += padding
         }
 
-        var detailsLabelSize: CGSize = statusLabel.string.count > 0 ? statusLabel.string.size(withAttributes: [NSAttributedString.Key.font: statusLabel.font!]) : CGSize.zero
-        if detailsLabelSize.width > 0.0 {
-            detailsLabelSize.width += 10.0
+        var statusLabelSize: CGSize = statusLabel.string.count > 0 ? statusLabel.string.size(withAttributes: [NSAttributedString.Key.font: statusLabel.font!]) : CGSize.zero
+        if statusLabelSize.width > 0.0 {
+            statusLabelSize.width += 10.0
         }
-        detailsLabelSize.width = min(detailsLabelSize.width, maxWidth)
-        totalSize.width = max(totalSize.width, detailsLabelSize.width)
-        totalSize.height += detailsLabelSize.height
-        if detailsLabelSize.height > 0.0 && indicatorF.size.height > 0.0 {
+        statusLabelSize.width = min(statusLabelSize.width, maxWidth)
+        totalSize.width = max(totalSize.width, statusLabelSize.width)
+        totalSize.height += statusLabelSize.height
+        if statusLabelSize.height > 0.0 && indicatorFrame.size.height > 0.0 {
             totalSize.height += padding
         }
         totalSize.width += margin * 2
@@ -423,31 +430,31 @@ class ProgressHUD: NSView {
 
         // Position elements
         var yPos = round((bounds.size.height - totalSize.height) / 2) + margin - yOffset
-        if indicatorF.size.height > 0.0 {
+        if indicatorFrame.size.height > 0.0 {
             yPos += padding
         }
-        if detailsLabelSize.height > 0.0 && indicatorF.size.height > 0.0 {
-            yPos += padding + detailsLabelSize.height
+        if statusLabelSize.height > 0.0 && indicatorFrame.size.height > 0.0 {
+            yPos += padding + statusLabelSize.height
         }
         let xPos: CGFloat = 0
-        indicatorF.origin.y = yPos
-        indicatorF.origin.x = round((bounds.size.width - indicatorF.size.width) / 2) + xPos
-        indicator?.frame = indicatorF
+        indicatorFrame.origin.y = yPos
+        indicatorFrame.origin.x = round((bounds.size.width - indicatorFrame.size.width) / 2) + xPos
+        indicator?.frame = indicatorFrame
 
-        if indicatorF.size.height > 0.0 {
+        if indicatorFrame.size.height > 0.0 {
             yPos -= padding
         }
-        if indicatorF.size.height > 0.0 {
+        if indicatorFrame.size.height > 0.0 {
             yPos -= padding
         }
 
-        if detailsLabelSize.height > 0.0 && indicatorF.size.height > 0.0 {
-            yPos -= padding + detailsLabelSize.height
+        if statusLabelSize.height > 0.0 && indicatorFrame.size.height > 0.0 {
+            yPos -= padding + statusLabelSize.height
         }
         var detailsLabelF = CGRect.zero
         detailsLabelF.origin.y = yPos
-        detailsLabelF.origin.x = round((bounds.size.width - detailsLabelSize.width) / 2) + xPos
-        detailsLabelF.size = detailsLabelSize
+        detailsLabelF.origin.x = round((bounds.size.width - statusLabelSize.width) / 2) + xPos
+        detailsLabelF.size = statusLabelSize
         statusLabel.frame = detailsLabelF
 
         // Enforce square rules
@@ -774,10 +781,8 @@ private class ProgressIndicatorLayer: CALayer {
 
 }
 
-
 /*
  TODO:
- - text only mode
  - hud window should stay in front when clicked on
- 
+
  */
