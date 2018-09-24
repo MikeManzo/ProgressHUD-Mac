@@ -8,11 +8,11 @@
 [![Twitter](https://img.shields.io/badge/twitter-@MassimoBi0lcati-blue.svg)](https://twitter.com/MassimoBi0lcati) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-Displays a simple HUD containing an optional progress indicator or cusom view and optional title and message.
-The ProgressHUD spans over the entire view it is attached to.
-
- ![Indeterminate](hud-indeterminate.gif)
+Displays a simple HUD containing an optional progress indicator or cusom view and optional status message.
+The ProgressHUD spans over the entire screen or in the containerView if provided.
  
+![Indeterminate](hud-indeterminate.gif)
+
 ## Features
 
 - [x] Easy to use API as extension to NSView
@@ -20,6 +20,7 @@ The ProgressHUD spans over the entire view it is attached to.
 - [x] Highly customizable theme and settings
 - [x] Option to prevent user operations on components below the view
 - [x] Optional completion handler called when HUD is completely hidden
+- [x] Appear and Disappear notifications
 
 ## Requirements
 
@@ -39,65 +40,35 @@ The ProgressHUD spans over the entire view it is attached to.
 
 One liner:
 ```swift
-view.showProgressHUD(title: "Error", message: "Message",  mode: .error, duration: 2)
+ProgressHUD.showSuccessWithStatus("Success!")
 ```
-Basic customization:
+Customization example:
 ```swift
-view.showProgressHUD(title: "Doing Stuff",
-                     message: "Completing something…",
-                     mode: .indeterminate,
-                     style: .light,
-                     maskType: .black,
-                     position: .center,
-                     duration: 2)
+ProgressHUD.setDefaultStyle(.custom(foreground: .yellow, backgroud: .red))
+ProgressHUD.setDefaultMaskType(.black)
+ProgressHUD.setDefaultPosition(.center)
 ```
-Advanced customization:
-```swift
-var settings = ProgressHUDSettings()
-settings.titleFont = NSFont.boldSystemFont(ofSize: 20)
-settings.messageFont = NSFont.systemFont(ofSize: 18)
-settings.opacity = 0.8
-settings.spinnerSize = 40
-settings.margin = 10
-settings.padding = 8
-settings.cornerRadius = 15
-settings.dismissible = false
-settings.square = true
-
-let imageView = NSImageView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
-imageView.image = NSImage(named: "unicorn")!
-view.showProgressHUD(title: "Custom View",
-                     message: "I am not a horse",
-                     mode: .custom(view: imageView),
-                     style: hudStyle,
-                     maskType: hudMaskType,
-                     position: hudPosition,
-                     duration: 4,
-                     settings: settings) {
-    print("Finished showing custom HUD")
-}
-```
-Setting the duration to 0 shows the ProgressHUD indefinitely. To Hide it:
-```swift
-view.hideProgressHUD()
-```
-For determinate progress indication use the following after showing the ProgressHUD with duration 0:
-```swift
-view.setProgressHUDProgress(progress)
-```
-(can be called safely from a background thread.)
-
-## Todo's
-
-- [ ] Add support for Cocoapods
-- [ ] Look into Mojave's dark mode
-- [ ] Add tests
+See demo app for more examples and read documentation for the APIs in the `ProgreessHUD.swift` file.
 
 ## Contribute
 
 We would love you for any contribution to **ProgressHUD**, check the ``LICENSE`` file for more info.
+Here are some outstanding TODOs:
+
+- [ ] Add support for Cocoapods
+- [ ] Look into Mojave's dark mode
+- [ ] See if it's possible to make the light and dark styles use respectively a vibrantLight and vibrantDark look
+- [ ] Add the option for an animated ring for the indeterminate progress. Something like: SVProgressHUDAnimationTypeFlat, // default animation type, custom flat animation (indefinite animated ring) - This feature would need a new enum ProgressHUDAnimationType: case flat, native
+- [ ] Add option to set var CGSize minimumSize
+- [ ] Add option to set custom infoImage, successImage, errorImage
+- [ ] Add option to set UIOffset (or the equivalent in macOS)
+- [ ] Add option to set NSTimeInterval fadeInAnimationDuration, fadeOutAnimationDuration // default is 0.15
+- [ ] See How SVProgressHUD handles calls on and off the main queue
+- [ ] Add tests
 
 ## Meta
+
+`ProgressHUD` was inspired by [SVProgressHUD](https://github.com/SVProgressHUD/SVProgressHUD) and [MBPROGRESSHUD-OSX](https://github.com/vanelizarov/MBProgressHUD-OSX)
 
 Massimo Biolcati – [@MassimoBi0lcati](https://twitter.com/MassimoBi0lcati)  [@iRealProApp](https://twitter.com/iRealProApp) 
 
