@@ -95,8 +95,9 @@ class ProgressHUD: NSView {
         // setup window into which to display the HUD
         let screen = NSScreen.screens[0]
         let window = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: true, screen: screen)
-        windowController = NSWindowController(window: window)
+        window.level = .floating
         window.backgroundColor = .clear
+        windowController = NSWindowController(window: window)
 
     }
 
@@ -394,7 +395,7 @@ class ProgressHUD: NSView {
         return min(minimum, maximumDismissTimeInterval)
     }
 
-    // MARK: - Layout
+    // MARK: - Layout & Drawing
 
     func layoutSubviews() {
 
@@ -467,8 +468,6 @@ class ProgressHUD: NSView {
         }
         size = totalSize
     }
-
-    // MARK: - Background Drawing
 
     override func draw(_ rect: NSRect) {
         layoutSubviews()
@@ -615,6 +614,8 @@ class ProgressHUD: NSView {
     }
 
 }
+
+// MARK: -
 
 private class ProgressIndicatorLayer: CALayer {
 
@@ -780,11 +781,7 @@ private class ProgressIndicatorLayer: CALayer {
 }
 
 /*
- TODO:
-
  add advanced customiozations to demo app UI options
-
- hud window should stay in front when clicked on
 
  Notifications
  extern NSString * _Nonnull const SVProgressHUDDidReceiveTouchEventNotification;
