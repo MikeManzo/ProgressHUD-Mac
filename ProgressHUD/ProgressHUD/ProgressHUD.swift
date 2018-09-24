@@ -288,6 +288,7 @@ class ProgressHUD: NSView {
     }
 
     private func show(_ animated: Bool) {
+        NotificationCenter.default.post(name: ProgressHUD.willAppear, object: self)
         useAnimation = animated
         needsDisplay = true
         isHidden = false
@@ -295,14 +296,19 @@ class ProgressHUD: NSView {
             // Fade in
             NSAnimationContext.beginGrouping()
             NSAnimationContext.current.duration = 0.20
+            NSAnimationContext.current.completionHandler = {
+                NotificationCenter.default.post(name: ProgressHUD.didAppear, object: self)
+            }
             animator().alphaValue = 1.0
             NSAnimationContext.endGrouping()
         } else {
             alphaValue = 1.0
+            NotificationCenter.default.post(name: ProgressHUD.didAppear, object: self)
         }
     }
 
     private func hide(_ animated: Bool) {
+        NotificationCenter.default.post(name: ProgressHUD.willDisappear, object: self)
         useAnimation = animated
         NSObject.cancelPreviousPerformRequests(withTarget: self)
         if animated {
@@ -335,6 +341,7 @@ class ProgressHUD: NSView {
         indicator = nil
         statusLabel.string = ""
         windowController?.close()
+        NotificationCenter.default.post(name: ProgressHUD.didDisappear, object: self)
     }
 
     private func setStatus(_ status: String) {
@@ -345,6 +352,9 @@ class ProgressHUD: NSView {
     }
 
     override func mouseDown(with theEvent: NSEvent) {
+
+        NotificationCenter.default.post(name: ProgressHUD.didReceiveMouseDownEvent, object: self)
+
         switch maskType {
         case .none: super.mouseDown(with: theEvent)
         default: break
@@ -599,6 +609,14 @@ class ProgressHUD: NSView {
         bezier3Path.stroke()
     }
 
+    // MARK: - Notifications
+
+    static let didReceiveMouseDownEvent = Notification.Name("ProgressHUD.didReceiveMouseDownEvent")
+    static let willDisappear = Notification.Name("ProgressHUD.willDisappear")
+    static let didDisappear = Notification.Name("ProgressHUD.didDisappear")
+    static let willAppear = Notification.Name("ProgressHUD.willAppear")
+    static let didAppear = Notification.Name("ProgressHUD.didAppear")
+
 }
 
 // MARK: -
@@ -767,21 +785,11 @@ private class ProgressIndicatorLayer: CALayer {
 }
 
 /*
- add advanced customiozations to demo app UI options
 
- Notifications
- extern NSString * _Nonnull const SVProgressHUDDidReceiveTouchEventNotification;
- extern NSString * _Nonnull const SVProgressHUDDidTouchDownInsideNotification;
- extern NSString * _Nonnull const SVProgressHUDWillDisappearNotification;
- extern NSString * _Nonnull const SVProgressHUDDidDisappearNotification;
- extern NSString * _Nonnull const SVProgressHUDWillAppearNotification;
- extern NSString * _Nonnull const SVProgressHUDDidAppearNotification;
+ - see How SVProgressHUD handles being on the main queue
 
- Add option for something like: SVProgressHUDAnimationTypeFlat,     // default animation type, custom flat animation (indefinite animated ring)
- @property (assign, nonatomic) SVProgressHUDAnimationType defaultAnimationType UI_APPEARANCE_SELECTOR;   // default is SVProgressHUDAnimationTypeFlat
-
- Add show completion handler:
- typedef void (^SVProgressHUDShowCompletion)(void);
+ - Add option for something like: SVProgressHUDAnimationTypeFlat,     // default animation type, custom flat animation (indefinite animated ring)
+    @property (assign, nonatomic) SVProgressHUDAnimationType defaultAnimationType UI_APPEARANCE_SELECTOR;   // default is SVProgressHUDAnimationTypeFlat
 
  @property (assign, nonatomic) CGSize minimumSize UI_APPEARANCE_SELECTOR;                    // default is CGSizeZero, can be used to avoid resizing for a larger message
 
@@ -794,7 +802,5 @@ private class ProgressIndicatorLayer: CALayer {
 
  @property (assign, nonatomic) NSTimeInterval fadeInAnimationDuration UI_APPEARANCE_SELECTOR;    // default is 0.15
  @property (assign, nonatomic) NSTimeInterval fadeOutAnimationDuration UI_APPEARANCE_SELECTOR;   // default is 0.15
-
- @property (assign, nonatomic) UIWindowLevel maxSupportedWindowLevel; // default is UIWindowLevelNormal
 
  */
