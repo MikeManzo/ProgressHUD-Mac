@@ -105,9 +105,9 @@ class ProgressHUD: NSView {
     class func setDefaultStyle(_ style: ProgressHUDStyle) { ProgressHUD.shared.style = style }
     private var style: ProgressHUDStyle = .light
 
-    /// Set the `ProgressHUDMaskType` (Default is .clear)
+    /// Set the `ProgressHUDMaskType` (Default is .none)
     class func setDefaultMaskType(_ maskType: ProgressHUDMaskType) { ProgressHUD.shared.maskType = maskType }
-    private var maskType: ProgressHUDMaskType = .clear
+    private var maskType: ProgressHUDMaskType = .none
 
     /// Set the `ProgressHUDPosition` position in the view (Default is .bottom)
     class func setDefaultPosition(_ position: ProgressHUDPosition) { ProgressHUD.shared.position = position }
@@ -141,9 +141,9 @@ class ProgressHUD: NSView {
     class func setCornerRadius(_ radius: CGFloat) { ProgressHUD.shared.cornerRadius = radius }
     private var cornerRadius: CGFloat = 10.0
 
-    /// Allow User to dismiss HUD manually by a tap event
+    /// Allow User to dismiss HUD manually by a tap event (Default is false)
     class func setDismissable(_ dismissable: Bool) { ProgressHUD.shared.dismissible = dismissable }
-    private var dismissible = true
+    private var dismissible = false
 
     /// Force the HUD dimensions to be equal if possible
     class func setSquare(_ square: Bool) { ProgressHUD.shared.square = square }
