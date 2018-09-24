@@ -163,7 +163,7 @@ class ProgressHUD: NSView {
 
     /// Presents a determinate (or updates already visible) `ProgressHUD` with a progress value
     class func show(progress: Double) {
-        ProgressHUD.show(progress: progress, status: "")
+        ProgressHUD.show(progress: progress, status: ProgressHUD.shared.statusLabel.string)
     }
 
     /// Presents a determinate (or updates already visible) `ProgressHUD` with a progress value and status message
@@ -320,6 +320,7 @@ class ProgressHUD: NSView {
         completionHandler?()
         indicator?.removeFromSuperview()
         indicator = nil
+        statusLabel.string = ""
         windowController?.close()
     }
 
@@ -772,3 +773,11 @@ private class ProgressIndicatorLayer: CALayer {
     }
 
 }
+
+
+/*
+ TODO:
+ - text only mode
+ - hud window should stay in front when clicked on
+ 
+ */
