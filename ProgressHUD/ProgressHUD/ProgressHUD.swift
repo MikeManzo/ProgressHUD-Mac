@@ -318,6 +318,7 @@ class ProgressHUD: NSView {
         isHidden = true
         removeFromSuperview()
         completionHandler?()
+        indicator?.removeFromSuperview()
         indicator = nil
         windowController?.close()
     }
@@ -522,6 +523,9 @@ class ProgressHUD: NSView {
             context.setFillColor(style.foregroundColor.cgColor)
             processPath.stroke()
 
+        case .info:
+            drawInfoSymbol(frame: NSRect(x: center.x - spinnerSize / 2, y: center.y - spinnerSize / 2, width: spinnerSize, height: spinnerSize))
+
         case .success:
             drawSuccessSymbol(frame: NSRect(x: center.x - spinnerSize / 2, y: center.y - spinnerSize / 2, width: spinnerSize, height: spinnerSize))
 
@@ -535,20 +539,54 @@ class ProgressHUD: NSView {
         NSGraphicsContext.restoreGraphicsState()
     }
 
-    private func drawErrorSymbol(frame: NSRect) {
+    private func drawInfoSymbol(frame: NSRect) {
+        //// General Declarations
+        // This non-generic function dramatically improves compilation times of complex expressions.
+        func fastFloor(_ x: CGFloat) -> CGFloat { return floor(x) }
 
-        let bezier3Path = NSBezierPath()
-        bezier3Path.move(to: NSPoint(x: frame.minX + 8, y: frame.maxY - 52))
-        bezier3Path.line(to: NSPoint(x: frame.minX + 52, y: frame.maxY - 8))
-        bezier3Path.move(to: NSPoint(x: frame.minX + 52, y: frame.maxY - 52))
-        bezier3Path.line(to: NSPoint(x: frame.minX + 8, y: frame.maxY - 8))
+        //// Oval Drawing
+        let ovalPath = NSBezierPath(ovalIn: NSRect(x: frame.minX + fastFloor((frame.width - 58) * 0.50000 + 0.5), y: frame.minY + fastFloor((frame.height - 58) * 0.50000 + 0.5), width: 58, height: 58))
         style.foregroundColor.setStroke()
-        bezier3Path.lineWidth = 4
-        bezier3Path.stroke()
+        ovalPath.lineWidth = 2
+        ovalPath.stroke()
+
+        //// Text Drawing
+        let textPath = NSBezierPath()
+        textPath.move(to: NSPoint(x: frame.minX + 30.31, y: frame.maxY - 10.28))
+        textPath.curve(to: NSPoint(x: frame.minX + 32.05, y: frame.maxY - 11), controlPoint1: NSPoint(x: frame.minX + 30.99, y: frame.maxY - 10.28), controlPoint2: NSPoint(x: frame.minX + 31.57, y: frame.maxY - 10.52))
+        textPath.curve(to: NSPoint(x: frame.minX + 32.77, y: frame.maxY - 12.75), controlPoint1: NSPoint(x: frame.minX + 32.53, y: frame.maxY - 11.48), controlPoint2: NSPoint(x: frame.minX + 32.77, y: frame.maxY - 12.07))
+        textPath.curve(to: NSPoint(x: frame.minX + 32.05, y: frame.maxY - 14.51), controlPoint1: NSPoint(x: frame.minX + 32.77, y: frame.maxY - 13.43), controlPoint2: NSPoint(x: frame.minX + 32.53, y: frame.maxY - 14.02))
+        textPath.curve(to: NSPoint(x: frame.minX + 30.31, y: frame.maxY - 15.24), controlPoint1: NSPoint(x: frame.minX + 31.57, y: frame.maxY - 15), controlPoint2: NSPoint(x: frame.minX + 30.99, y: frame.maxY - 15.24))
+        textPath.curve(to: NSPoint(x: frame.minX + 28.55, y: frame.maxY - 14.51), controlPoint1: NSPoint(x: frame.minX + 29.62, y: frame.maxY - 15.24), controlPoint2: NSPoint(x: frame.minX + 29.04, y: frame.maxY - 15))
+        textPath.curve(to: NSPoint(x: frame.minX + 27.81, y: frame.maxY - 12.75), controlPoint1: NSPoint(x: frame.minX + 28.06, y: frame.maxY - 14.02), controlPoint2: NSPoint(x: frame.minX + 27.81, y: frame.maxY - 13.43))
+        textPath.curve(to: NSPoint(x: frame.minX + 28.54, y: frame.maxY - 11), controlPoint1: NSPoint(x: frame.minX + 27.81, y: frame.maxY - 12.07), controlPoint2: NSPoint(x: frame.minX + 28.06, y: frame.maxY - 11.48))
+        textPath.curve(to: NSPoint(x: frame.minX + 30.31, y: frame.maxY - 10.28), controlPoint1: NSPoint(x: frame.minX + 29.02, y: frame.maxY - 10.52), controlPoint2: NSPoint(x: frame.minX + 29.61, y: frame.maxY - 10.28))
+        textPath.close()
+        textPath.move(to: NSPoint(x: frame.minX + 32.33, y: frame.maxY - 21.98))
+        textPath.line(to: NSPoint(x: frame.minX + 32.33, y: frame.maxY - 39.95))
+        textPath.curve(to: NSPoint(x: frame.minX + 32.64, y: frame.maxY - 42.74), controlPoint1: NSPoint(x: frame.minX + 32.33, y: frame.maxY - 41.35), controlPoint2: NSPoint(x: frame.minX + 32.43, y: frame.maxY - 42.28))
+        textPath.curve(to: NSPoint(x: frame.minX + 33.54, y: frame.maxY - 43.78), controlPoint1: NSPoint(x: frame.minX + 32.84, y: frame.maxY - 43.21), controlPoint2: NSPoint(x: frame.minX + 33.14, y: frame.maxY - 43.55))
+        textPath.curve(to: NSPoint(x: frame.minX + 35.73, y: frame.maxY - 44.12), controlPoint1: NSPoint(x: frame.minX + 33.94, y: frame.maxY - 44.01), controlPoint2: NSPoint(x: frame.minX + 34.67, y: frame.maxY - 44.12))
+        textPath.line(to: NSPoint(x: frame.minX + 35.73, y: frame.maxY - 45))
+        textPath.line(to: NSPoint(x: frame.minX + 24.86, y: frame.maxY - 45))
+        textPath.line(to: NSPoint(x: frame.minX + 24.86, y: frame.maxY - 44.12))
+        textPath.curve(to: NSPoint(x: frame.minX + 27.06, y: frame.maxY - 43.8), controlPoint1: NSPoint(x: frame.minX + 25.95, y: frame.maxY - 44.12), controlPoint2: NSPoint(x: frame.minX + 26.68, y: frame.maxY - 44.02))
+        textPath.curve(to: NSPoint(x: frame.minX + 27.95, y: frame.maxY - 42.75), controlPoint1: NSPoint(x: frame.minX + 27.43, y: frame.maxY - 43.59), controlPoint2: NSPoint(x: frame.minX + 27.73, y: frame.maxY - 43.24))
+        textPath.curve(to: NSPoint(x: frame.minX + 28.28, y: frame.maxY - 39.95), controlPoint1: NSPoint(x: frame.minX + 28.17, y: frame.maxY - 42.27), controlPoint2: NSPoint(x: frame.minX + 28.28, y: frame.maxY - 41.33))
+        textPath.line(to: NSPoint(x: frame.minX + 28.28, y: frame.maxY - 31.33))
+        textPath.curve(to: NSPoint(x: frame.minX + 28.06, y: frame.maxY - 26.62), controlPoint1: NSPoint(x: frame.minX + 28.28, y: frame.maxY - 28.9), controlPoint2: NSPoint(x: frame.minX + 28.21, y: frame.maxY - 27.33))
+        textPath.curve(to: NSPoint(x: frame.minX + 27.52, y: frame.maxY - 25.53), controlPoint1: NSPoint(x: frame.minX + 27.95, y: frame.maxY - 26.1), controlPoint2: NSPoint(x: frame.minX + 27.77, y: frame.maxY - 25.73))
+        textPath.curve(to: NSPoint(x: frame.minX + 26.52, y: frame.maxY - 25.22), controlPoint1: NSPoint(x: frame.minX + 27.28, y: frame.maxY - 25.33), controlPoint2: NSPoint(x: frame.minX + 26.94, y: frame.maxY - 25.22))
+        textPath.curve(to: NSPoint(x: frame.minX + 24.86, y: frame.maxY - 25.59), controlPoint1: NSPoint(x: frame.minX + 26.07, y: frame.maxY - 25.22), controlPoint2: NSPoint(x: frame.minX + 25.51, y: frame.maxY - 25.35))
+        textPath.line(to: NSPoint(x: frame.minX + 24.52, y: frame.maxY - 24.71))
+        textPath.line(to: NSPoint(x: frame.minX + 31.26, y: frame.maxY - 21.98))
+        textPath.line(to: NSPoint(x: frame.minX + 32.33, y: frame.maxY - 21.98))
+        textPath.close()
+        style.foregroundColor.setFill()
+        textPath.fill()
     }
 
     private func drawSuccessSymbol(frame: NSRect) {
-
         let bezierPath = NSBezierPath()
         bezierPath.move(to: NSPoint(x: frame.minX + 0.05833 * frame.width, y: frame.minY + 0.48377 * frame.height))
         bezierPath.line(to: NSPoint(x: frame.minX + 0.31429 * frame.width, y: frame.minY + 0.19167 * frame.height))
@@ -557,6 +595,17 @@ class ProgressHUD: NSView {
         bezierPath.lineWidth = 4
         bezierPath.lineCapStyle = .round
         bezierPath.stroke()
+    }
+
+    private func drawErrorSymbol(frame: NSRect) {
+        let bezier3Path = NSBezierPath()
+        bezier3Path.move(to: NSPoint(x: frame.minX + 8, y: frame.maxY - 52))
+        bezier3Path.line(to: NSPoint(x: frame.minX + 52, y: frame.maxY - 8))
+        bezier3Path.move(to: NSPoint(x: frame.minX + 52, y: frame.maxY - 52))
+        bezier3Path.line(to: NSPoint(x: frame.minX + 8, y: frame.maxY - 8))
+        style.foregroundColor.setStroke()
+        bezier3Path.lineWidth = 4
+        bezier3Path.stroke()
     }
 
 }
