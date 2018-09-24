@@ -232,6 +232,11 @@ class ProgressHUD: NSView {
         ProgressHUD.shared.perform(#selector(hideDelayed(_:)), with: 1, afterDelay: delay)
     }
 
+    /// Returns `true` is a `ProgressHUD` is currently being shown
+    class func isVisible() -> Bool {
+        return !ProgressHUD.shared.isHidden
+    }
+
     // MARK: - Private Properties
 
     private var mode: ProgressHUDMode = .indeterminate
