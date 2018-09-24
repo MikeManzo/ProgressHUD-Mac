@@ -788,6 +788,35 @@ private class ProgressIndicatorLayer: CALayer {
 
 /*
  TODO:
- - hud window should stay in front when clicked on
+
+ hud window should stay in front when clicked on
+
+ Notifications
+ extern NSString * _Nonnull const SVProgressHUDDidReceiveTouchEventNotification;
+ extern NSString * _Nonnull const SVProgressHUDDidTouchDownInsideNotification;
+ extern NSString * _Nonnull const SVProgressHUDWillDisappearNotification;
+ extern NSString * _Nonnull const SVProgressHUDDidDisappearNotification;
+ extern NSString * _Nonnull const SVProgressHUDWillAppearNotification;
+ extern NSString * _Nonnull const SVProgressHUDDidAppearNotification;
+
+ Add option for something like: SVProgressHUDAnimationTypeFlat,     // default animation type, custom flat animation (indefinite animated ring)
+ @property (assign, nonatomic) SVProgressHUDAnimationType defaultAnimationType UI_APPEARANCE_SELECTOR;   // default is SVProgressHUDAnimationTypeFlat
+
+ Add show completion handler:
+ typedef void (^SVProgressHUDShowCompletion)(void);
+
+ @property (assign, nonatomic) CGSize minimumSize UI_APPEARANCE_SELECTOR;                    // default is CGSizeZero, can be used to avoid resizing for a larger message
+
+ custom images:
+ @property (strong, nonatomic, nonnull) UIImage *infoImage UI_APPEARANCE_SELECTOR;           // default is the bundled info image provided by Freepik
+ @property (strong, nonatomic, nonnull) UIImage *successImage UI_APPEARANCE_SELECTOR;        // default is the bundled success image provided by Freepik
+ @property (strong, nonatomic, nonnull) UIImage *errorImage UI_APPEARANCE_SELECTOR;          // default is the bundled error image provided by Freepik
+
+ @property (assign, nonatomic) UIOffset offsetFromCenter UI_APPEARANCE_SELECTOR; // default is 0, 0
+
+ @property (assign, nonatomic) NSTimeInterval fadeInAnimationDuration UI_APPEARANCE_SELECTOR;    // default is 0.15
+ @property (assign, nonatomic) NSTimeInterval fadeOutAnimationDuration UI_APPEARANCE_SELECTOR;   // default is 0.15
+
+ @property (assign, nonatomic) UIWindowLevel maxSupportedWindowLevel; // default is UIWindowLevelNormal
 
  */
