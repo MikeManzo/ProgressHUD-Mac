@@ -78,10 +78,13 @@ class ProgressHUD: NSView {
 
     private override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
+
+        // setup view
         autoresizingMask = [.maxXMargin, .minXMargin, .maxYMargin, .minYMargin]
         alphaValue = 0.0
         isHidden = true
 
+        // setup status message label
         statusLabel.font = font
         statusLabel.isEditable = false
         statusLabel.isSelectable = false
@@ -89,6 +92,7 @@ class ProgressHUD: NSView {
         statusLabel.backgroundColor = .clear
         addSubview(statusLabel)
 
+        // setup window into which to display the HUD
         let screen = NSScreen.screens[0]
         let window = NSWindow(contentRect: screen.frame, styleMask: .borderless, backing: .buffered, defer: true, screen: screen)
         windowController = NSWindowController(window: window)
@@ -132,7 +136,7 @@ class ProgressHUD: NSView {
 
     /// The amount of space between the HUD edge and the HUD elements (label, indicator or custom view)
     class func setMargin(_ margin: CGFloat) { ProgressHUD.shared.margin = margin }
-    private var margin: CGFloat = 20.0
+    private var margin: CGFloat = 18.0
 
     /// The amount of space between the HUD elements (label, indicator or custom view)
     class func setPadding(_ padding: CGFloat) { ProgressHUD.shared.padding = padding }
@@ -140,7 +144,7 @@ class ProgressHUD: NSView {
 
     /// The corner radius for th HUD
     class func setCornerRadius(_ radius: CGFloat) { ProgressHUD.shared.cornerRadius = radius }
-    private var cornerRadius: CGFloat = 10.0
+    private var cornerRadius: CGFloat = 15.0
 
     /// Allow User to dismiss HUD manually by a tap event (Default is false)
     class func setDismissable(_ dismissable: Bool) { ProgressHUD.shared.dismissible = dismissable }
@@ -150,7 +154,7 @@ class ProgressHUD: NSView {
     class func setSquare(_ square: Bool) { ProgressHUD.shared.square = square }
     private var square = false
 
-    // MARK: - Presentation Methods
+    // MARK: - Presentation
 
     /// Presents an indeterminate `ProgressHUD` with no status message
     class func show() {
