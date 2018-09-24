@@ -285,7 +285,7 @@ class ProgressHUD: NSView {
             progressIndicator = ProgressIndicatorLayer(size: ProgressHUD.shared.spinnerSize, color: ProgressHUD.shared.style.foregroundColor)
             view.addSubview(self)
         }
-        updateIndicators()
+        setupProgressIndicator()
         setStatus(status)
         show(true)
     }
@@ -353,11 +353,13 @@ class ProgressHUD: NSView {
         default: break
         }
         if dismissible {
-            performSelector(onMainThread: #selector(cleanUp), with: nil, waitUntilDone: true)
+            DispatchQueue.main.async {
+                self.hide(self.useAnimation)
+            }
         }
     }
 
-    private func updateIndicators() {
+    private func setupProgressIndicator() {
 
         switch mode {
 
@@ -382,19 +384,9 @@ class ProgressHUD: NSView {
         }
     }
 
-    @objc private func cleanUp() {
-        hide(useAnimation)
-    }
-
     @objc private func hideDelayed(_ animated: NSNumber?) {
         NSObject.cancelPreviousPerformRequests(withTarget: self)
         hide((animated != 0))
-    }
-
-    // MARK: - Internal show & hide operations
-
-    func animationFinished(_ animationID: String?, finished: Bool, context: UnsafeMutableRawPointer?) {
-        done()
     }
 
     private func displayDuration(for string: String) -> TimeInterval {
@@ -451,20 +443,17 @@ class ProgressHUD: NSView {
         indicator?.frame = indicatorFrame
 
         if indicatorFrame.size.height > 0.0 {
-            yPos -= padding
-        }
-        if indicatorFrame.size.height > 0.0 {
-            yPos -= padding
+            yPos -= padding * 2
         }
 
         if statusLabelSize.height > 0.0 && indicatorFrame.size.height > 0.0 {
             yPos -= padding + statusLabelSize.height
         }
-        var detailsLabelF = CGRect.zero
-        detailsLabelF.origin.y = yPos
-        detailsLabelF.origin.x = round((bounds.size.width - statusLabelSize.width) / 2) + xPos
-        detailsLabelF.size = statusLabelSize
-        statusLabel.frame = detailsLabelF
+        var statusLabelFrame = CGRect.zero
+        statusLabelFrame.origin.y = yPos
+        statusLabelFrame.origin.x = round((bounds.size.width - statusLabelSize.width) / 2) + xPos
+        statusLabelFrame.size = statusLabelSize
+        statusLabel.frame = statusLabelFrame
 
         // Enforce square rules
         if square {
@@ -792,6 +781,8 @@ private class ProgressIndicatorLayer: CALayer {
 
 /*
  TODO:
+
+ add advanced customiozations to demo app UI options
 
  hud window should stay in front when clicked on
 
