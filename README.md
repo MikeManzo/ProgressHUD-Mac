@@ -1,5 +1,5 @@
 # ProgressHUD
-`ProgressHUD` is a clean and easy-to-use HUD meant to display the progress of an ongoing task on macOS. 
+`ProgressHUD` is a clean and easy-to-use HUD meant to display the progress of an ongoing task of a status message on macOS. 
  
 [![Build Status](https://travis-ci.com/massimobio/ProgressHUD.svg?token=2EEVFqEqxnnpFcQYpwaE&branch=master)](https://travis-ci.com/massimobio/ProgressHUD)
 [![macOS](https://img.shields.io/badge/platform-macOS-blue.svg)](https://www.apple.com/macos/mojave/)
@@ -9,6 +9,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 Displays a simple HUD containing an optional progress indicator or cusom view and optional status message.
+
 The ProgressHUD spans over the entire screen or in the containerView if provided.
  
 ![Indeterminate](hud-indeterminate.gif)
@@ -53,22 +54,10 @@ See demo app for more examples and read documentation for the APIs in the `Progr
 ## Contribute
 
 We would love you for any contribution to **ProgressHUD**, check the ``LICENSE`` file for more info.
-Here are some outstanding TODOs:
-
-- [ ] Add support for Cocoapods
-- [ ] Look into Mojave's dark mode
-- [ ] See if it's possible to make the light and dark styles use respectively a vibrantLight and vibrantDark look
-- [ ] Add the option for an animated ring for the indeterminate progress. Something like: SVProgressHUDAnimationTypeFlat, // default animation type, custom flat animation (indefinite animated ring) - This feature would need a new enum ProgressHUDAnimationType: case flat, native
-- [ ] Add option to set var CGSize minimumSize
-- [ ] Add option to set custom infoImage, successImage, errorImage
-- [ ] Add option to set UIOffset (or the equivalent in macOS)
-- [ ] Add option to set NSTimeInterval fadeInAnimationDuration, fadeOutAnimationDuration // default is 0.15
-- [ ] See How SVProgressHUD handles calls on and off the main queue
-- [ ] Add tests
 
 ## Meta
 
-`ProgressHUD` was inspired by [SVProgressHUD](https://github.com/SVProgressHUD/SVProgressHUD) and [MBPROGRESSHUD-OSX](https://github.com/vanelizarov/MBProgressHUD-OSX)
+`ProgressHUD` was inspired by [SVProgressHUD](https://github.com/SVProgressHUD/SVProgressHUD) and [MBProgressHUD-OSX](https://github.com/vanelizarov/MBProgressHUD-OSX)
 
 Massimo Biolcati – [@MassimoBi0lcati](https://twitter.com/MassimoBi0lcati)  [@iRealProApp](https://twitter.com/iRealProApp) 
 
