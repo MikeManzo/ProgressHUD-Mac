@@ -16,7 +16,8 @@ The ProgressHUD spans over the entire screen or in the containerView if provided
 
 ## Features
 
-- [x] Easy to use API as extension to NSView
+- [x] Easy to use API
+- [x] Present a HUD over the whole screen or within a window or view
 - [x] Sensible defaults for one line instantiation
 - [x] Highly customizable theme and settings
 - [x] Option to prevent user operations on components below the view
