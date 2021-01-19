@@ -1,6 +1,6 @@
 language: objective-c
 os: osx
-osx_image: xcode10
+osx_image: xcode11.5
 script:
   
   - xcodebuild build -project ProgressHUD.xcodeproj -scheme ProgressHUD -destination "platform=OS X,arch=x86_64"

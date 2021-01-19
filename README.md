@@ -1,9 +1,9 @@
 # ProgressHUD
 `ProgressHUD` is a clean and easy-to-use HUD meant to display the progress of an ongoing task of a status message on macOS. 
  
-[![Build Status](https://travis-ci.com/massimobio/ProgressHUD.svg?token=2EEVFqEqxnnpFcQYpwaE&branch=master)](https://travis-ci.com/massimobio/ProgressHUD)
+[![Build Status](https://api.travis-ci.com/massimobio/ProgressHUD-Mac.svg?branch=main)](https://travis-ci.com/massimobio/ProgressHUD)
 [![macOS](https://img.shields.io/badge/platform-macOS-blue.svg)](https://www.apple.com/macos/mojave/)
-[![Swift 4.2](https://img.shields.io/badge/swift-4.2-red.svg?style=flat)](https://developer.apple.com/swift)
+[![Swift 5.0](https://img.shields.io/badge/swift-5.0-red.svg?style=flat)](https://developer.apple.com/swift)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](https://opensource.org/licenses/MIT)
 [![Twitter](https://img.shields.io/badge/twitter-@MassimoBi0lcati-blue.svg)](https://twitter.com/MassimoBi0lcati) 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
